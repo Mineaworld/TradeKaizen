@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 import {
   BarChart3,
   BookMarked,
@@ -19,12 +20,15 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 const Navigation = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -46,6 +50,10 @@ const Navigation = () => {
     { name: "Notes", href: "/notes", icon: StickyNote },
   ];
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <>
       {/* Mobile Top Navigation */}
@@ -66,6 +74,21 @@ const Navigation = () => {
             <span className="text-primary">Trade</span>Hub
           </span>
         </Link>
+
+        {/* Theme toggle in mobile header */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="ml-auto"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -167,16 +190,52 @@ const Navigation = () => {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t">
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full justify-start text-muted-foreground",
-              isCollapsed && "justify-center px-0"
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              className={cn(
+                "justify-start text-muted-foreground",
+                isCollapsed && "justify-center px-0 w-full"
+              )}
+            >
+              <Settings className="h-5 w-5 opacity-70" />
+              {!isCollapsed && <span className="ml-3">Settings</span>}
+            </Button>
+
+            {/* Theme toggle in sidebar footer */}
+            {!isCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="text-muted-foreground"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5 opacity-70" />
+                ) : (
+                  <Moon className="h-5 w-5 opacity-70" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
             )}
-          >
-            <Settings className="h-5 w-5 opacity-70" />
-            {!isCollapsed && <span className="ml-3">Settings</span>}
-          </Button>
+          </div>
+
+          {/* Theme toggle when collapsed - centered */}
+          {isCollapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="w-full text-muted-foreground mt-2"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 opacity-70" />
+              ) : (
+                <Moon className="h-5 w-5 opacity-70" />
+              )}
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          )}
         </div>
       </aside>
     </>
