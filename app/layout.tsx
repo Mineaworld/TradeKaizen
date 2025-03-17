@@ -1,15 +1,16 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import Navigation from '@/components/navigation';
+import Navigation from "@/components/navigation";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Trading Journal Hub',
-  description: 'Your comprehensive trading journal and data management platform',
+  title: "Trading Journal Hub",
+  description:
+    "Your comprehensive trading journal and data management platform",
 };
 
 export default function RootLayout({
@@ -26,11 +27,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-background">
+          <div className="flex min-h-screen bg-background">
             <Navigation />
-            <main className="container mx-auto px-4 py-6">
-              {children}
-            </main>
+            <div className="flex-1 transition-all duration-300 md:ml-64 sidebar-collapsed:md:ml-[70px]">
+              <div className="md:pt-0 pt-16">
+                <main className="container mx-auto px-4 py-6">{children}</main>
+              </div>
+            </div>
           </div>
           <Toaster />
         </ThemeProvider>
