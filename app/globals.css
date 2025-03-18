@@ -81,6 +81,31 @@
   }
 }
 
+/* Enhanced dropdown styling to fix positioning and z-index issues */
+.radix-dropdown-content,
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+/* Fix for Radix UI dropdown overlays */
+[data-radix-menu-content],
+[data-radix-dropdown-menu-content] {
+  pointer-events: auto !important;
+}
+
+/* Prevent pointer event issues */
+body:has([data-radix-dropdown-menu][data-state="open"]) {
+  pointer-events: auto !important;
+  overflow: auto !important;
+}
+
+/* Add this to ensure dropdowns appear above other elements */
+.radix-dropdown-content,
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
 @layer utilities {
   .sidebar-collapsed .md\:ml-64 {
     margin-left: 70px;

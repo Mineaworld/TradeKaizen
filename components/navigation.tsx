@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/contexts/auth-context";
 import {
   BarChart3,
   BookMarked,
@@ -22,6 +23,7 @@ import {
   ChevronRight,
   Sun,
   Moon,
+  LogOut,
 } from "lucide-react";
 
 const Navigation = () => {
@@ -29,6 +31,7 @@ const Navigation = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const { user, signOut } = useAuth();
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -71,7 +74,7 @@ const Navigation = () => {
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <span className="font-bold text-xl tracking-tight">
-            <span className="text-primary">Trade</span>Hub
+            <span className="text-primary">Trade</span>Kaizen
           </span>
         </Link>
 
@@ -117,7 +120,7 @@ const Navigation = () => {
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
               <span className="font-bold text-xl tracking-tight">
-                <span className="text-primary">Trade</span>Hub
+                <span className="text-primary">Trade</span>Kaizen
               </span>
             </Link>
           )}
@@ -234,6 +237,47 @@ const Navigation = () => {
                 <Moon className="h-5 w-5 opacity-70" />
               )}
               <span className="sr-only">Toggle theme</span>
+            </Button>
+          )}
+
+          {/* Logout button */}
+          {user && (
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start text-muted-foreground mt-2",
+                isCollapsed && "justify-center px-0"
+              )}
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-5 w-5 opacity-70" />
+              {!isCollapsed && <span className="ml-3">Logout</span>}
+            </Button>
+          )}
+
+          {/* Login/Register buttons if not logged in */}
+          {!user && !isCollapsed && (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
+          )}
+
+          {!user && isCollapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-full text-muted-foreground mt-2"
+              asChild
+            >
+              <Link href="/login">
+                <LogOut className="h-5 w-5 opacity-70 rotate-180" />
+                <span className="sr-only">Login</span>
+              </Link>
             </Button>
           )}
         </div>
