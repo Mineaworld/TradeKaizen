@@ -1,18 +1,18 @@
 // Common trading pairs organized by market type
 export const TRADING_PAIRS = {
   // Cryptocurrency pairs
-  crypto: [
-    "BTC/USD",
-    "ETH/USD",
-    "BNB/USD",
-    "XRP/USD",
-    "SOL/USD",
-    "DOGE/USD",
-    "ADA/USD",
-    "AVAX/USD",
-    "MATIC/USD",
-    "DOT/USD",
-  ],
+  // crypto: [
+  //   "BTC/USD",
+  //   "ETH/USD",
+  //   "BNB/USD",
+  //   "XRP/USD",
+  //   "SOL/USD",
+  //   "DOGE/USD",
+  //   "ADA/USD",
+  //   "AVAX/USD",
+  //   "MATIC/USD",
+  //   "DOT/USD",
+  // ],
 
   // Forex pairs
   forex: [
@@ -27,20 +27,7 @@ export const TRADING_PAIRS = {
     "GBP/JPY",
     "EUR/JPY",
   ],
-
-  // Stock tickers
-  stocks: [
-    "AAPL",
-    "MSFT",
-    "AMZN",
-    "GOOGL",
-    "META",
-    "TSLA",
-    "NVDA",
-    "JPM",
-    "V",
-    "WMT",
-  ],
+  // End of Selection
 
   // Futures contracts
   futures: [
@@ -68,9 +55,7 @@ export const TRADING_PAIRS = {
 
 // Flatten all pairs for use in components that need a single list
 export const ALL_TRADING_PAIRS = [
-  ...TRADING_PAIRS.crypto,
   ...TRADING_PAIRS.forex,
-  ...TRADING_PAIRS.stocks,
   ...TRADING_PAIRS.futures,
   ...TRADING_PAIRS.indices,
 ];
