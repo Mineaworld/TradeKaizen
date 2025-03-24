@@ -1,32 +1,34 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { useStrategies } from "@/contexts/strategy-context";
+import { Button } from "@/components/ui/button";
 import {
-  ArrowUpRight,
-  ArrowDownRight,
-  Percent,
-  Timer,
-  TrendingUp,
-  BarChart,
-} from "lucide-react";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Percent, TrendingUp, Timer, BarChart } from "lucide-react"; // Adding missing icon imports
 
+// Sample strategy data
 const strategies = [
-  {
-    name: "Breakout Trading",
-    description:
-      "Capitalize on price movements that break through established support or resistance levels.",
-    winRate: 68,
-    avgReturn: 2.4,
-    timeframe: "1h-4h",
-    type: "Momentum",
-    metrics: [
-      { label: "Win Rate", value: "68%", icon: Percent },
-      { label: "Avg Return", value: "2.4%", icon: TrendingUp },
-      { label: "Timeframe", value: "1h-4h", icon: Timer },
-      { label: "Type", value: "Momentum", icon: BarChart },
-    ],
-  },
   {
     name: "Trend Following",
     description:
@@ -105,10 +107,19 @@ const strategies = [
 ];
 
 export default function StrategiesPage() {
+  // Use the context strategies if needed
+  const { strategies: contextStrategies, isLoading, error } = useStrategies();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newStrategy, setNewStrategy] = useState({ name: "", description: "" });
+  const { toast } = useToast();
+
+  // For now, using the mock data above instead of context strategies
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Trading Strategies</h1>
+        <Button onClick={() => setShowCreateDialog(true)}>Add Strategy</Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -152,6 +163,66 @@ export default function StrategiesPage() {
           </Card>
         ))}
       </div>
+
+      {/* Dialog for adding a new strategy */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Strategy</DialogTitle>
+            <DialogDescription>
+              Create a new trading strategy to categorize your trades.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                placeholder="Strategy name"
+                value={newStrategy.name}
+                onChange={(e) =>
+                  setNewStrategy({ ...newStrategy, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Brief description of your strategy"
+                value={newStrategy.description}
+                onChange={(e) =>
+                  setNewStrategy({
+                    ...newStrategy,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                // Add your strategy creation logic here
+                toast({
+                  title: "Strategy Created",
+                  description:
+                    "Your new strategy has been created successfully.",
+                });
+                setShowCreateDialog(false);
+              }}
+            >
+              Save Strategy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
+}

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Navigation from "@/components/navigation";
 import { AuthProvider } from "@/contexts/auth-context";
+import { StrategyProvider } from "@/contexts/strategy-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,24 +24,26 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="flex min-h-screen bg-background">
-              <Navigation />
-              <div className="flex-1 transition-all duration-300 md:ml-64 sidebar-collapsed:md:ml-[70px]">
-                <div className="md:pt-0 pt-16">
-                  <main className="container mx-auto px-4 py-6">
-                    {children}
-                  </main>
+          <StrategyProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <div className="flex min-h-screen bg-background">
+                <Navigation />
+                <div className="flex-1 transition-all duration-300 md:ml-64 sidebar-collapsed:md:ml-[70px]">
+                  <div className="md:pt-0 pt-16">
+                    <main className="container mx-auto px-4 py-6">
+                      {children}
+                    </main>
+                  </div>
                 </div>
               </div>
-            </div>
-            <Toaster />
-          </ThemeProvider>
+              <Toaster />
+            </ThemeProvider>
+          </StrategyProvider>
         </AuthProvider>
       </body>
     </html>

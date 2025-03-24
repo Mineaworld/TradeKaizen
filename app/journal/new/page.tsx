@@ -6,6 +6,7 @@ import JournalEntryForm from "@/components/journal/journal-entry-form";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
+import { StrategyProvider } from "@/contexts/strategy-context"; // Add this import
 
 export default function NewJournalEntryPage() {
   const router = useRouter();
@@ -29,13 +30,13 @@ export default function NewJournalEntryPage() {
       const entryPrice = parseFloat(data.entry_price?.toString() || "0");
       const exitPrice = parseFloat(data.exit_price?.toString() || "0");
       const positionSize = parseFloat(data.position_size?.toString() || "0");
-      
+
       // Calculate profit loss with safer value handling
-      const profitLoss = 
-        (exitPrice - entryPrice) * 
-        positionSize * 
+      const profitLoss =
+        (exitPrice - entryPrice) *
+        positionSize *
         (data.trade_direction === "LONG" ? 1 : -1);
-      
+
       // Ensure all required fields have values
       const entryData = {
         ...data,
@@ -68,7 +69,8 @@ export default function NewJournalEntryPage() {
       console.error("Error adding journal entry:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add journal entry. Please try again.",
+        description:
+          error.message || "Failed to add journal entry. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -83,7 +85,13 @@ export default function NewJournalEntryPage() {
   return (
     <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Add New Journal Entry</h1>
-      <JournalEntryForm onSubmit={handleSubmit} onCancel={handleCancel} />
+      <StrategyProvider>
+        <JournalEntryForm
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isSubmitting={isSubmitting}
+        />
+      </StrategyProvider>
     </div>
   );
 }
