@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/auth-context";
+import { ClientOnlyIcon } from "@/components/client-only-icon";
 import {
   BarChart3,
   BookMarked,
@@ -26,7 +27,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-const Navigation = () => {
+export function Navigation() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
@@ -67,11 +68,15 @@ const Navigation = () => {
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           className="mr-3"
         >
-          <Menu className="h-5 w-5" />
+          <ClientOnlyIcon>
+            <Menu className="h-5 w-5" />
+          </ClientOnlyIcon>
         </Button>
         <Link href="/" className="flex items-center space-x-2 group">
           <div className="bg-primary/10 rounded-md p-1.5 group-hover:bg-primary/20 transition-colors">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <ClientOnlyIcon>
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </ClientOnlyIcon>
           </div>
           <span className="font-bold text-xl tracking-tight">
             <span className="text-primary">Trade</span>Kaizen
@@ -86,9 +91,13 @@ const Navigation = () => {
           className="ml-auto"
         >
           {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
+            <ClientOnlyIcon>
+              <Sun className="h-5 w-5" />
+            </ClientOnlyIcon>
           ) : (
-            <Moon className="h-5 w-5" />
+            <ClientOnlyIcon>
+              <Moon className="h-5 w-5" />
+            </ClientOnlyIcon>
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
@@ -117,7 +126,9 @@ const Navigation = () => {
           {!isCollapsed && (
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="bg-primary/10 rounded-md p-1.5 group-hover:bg-primary/20 transition-colors">
-                <BarChart3 className="h-5 w-5 text-primary" />
+                <ClientOnlyIcon>
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </ClientOnlyIcon>
               </div>
               <span className="font-bold text-xl tracking-tight">
                 <span className="text-primary">Trade</span>Kaizen
@@ -127,7 +138,9 @@ const Navigation = () => {
           {isCollapsed && (
             <div className="mx-auto">
               <div className="bg-primary/10 rounded-md p-1.5">
-                <BarChart3 className="h-5 w-5 text-primary" />
+                <ClientOnlyIcon>
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </ClientOnlyIcon>
               </div>
             </div>
           )}
@@ -138,9 +151,13 @@ const Navigation = () => {
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ClientOnlyIcon>
+                <ChevronRight className="h-4 w-4" />
+              </ClientOnlyIcon>
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ClientOnlyIcon>
+                <ChevronLeft className="h-4 w-4" />
+              </ClientOnlyIcon>
             )}
           </Button>
           <Button
@@ -149,7 +166,9 @@ const Navigation = () => {
             className="md:hidden"
             onClick={() => setIsMobileSidebarOpen(false)}
           >
-            <X className="h-5 w-5" />
+            <ClientOnlyIcon>
+              <X className="h-5 w-5" />
+            </ClientOnlyIcon>
           </Button>
         </div>
 
@@ -173,17 +192,21 @@ const Navigation = () => {
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  <Icon
-                    className={cn(
-                      "h-5 w-5",
-                      isActive ? "text-primary" : "opacity-70"
-                    )}
-                  />
+                  <ClientOnlyIcon>
+                    <Icon
+                      className={cn(
+                        "h-5 w-5",
+                        isActive ? "text-primary" : "opacity-70"
+                      )}
+                    />
+                  </ClientOnlyIcon>
                   {!isCollapsed && (
                     <span className="font-medium">{item.name}</span>
                   )}
                   {!isCollapsed && item.name === "Resources" && (
-                    <ChevronDown className="h-3 w-3 ml-auto opacity-70" />
+                    <ClientOnlyIcon>
+                      <ChevronDown className="h-3 w-3 ml-auto opacity-70" />
+                    </ClientOnlyIcon>
                   )}
                 </Link>
               );
@@ -201,7 +224,9 @@ const Navigation = () => {
                 isCollapsed && "justify-center px-0 w-full"
               )}
             >
-              <Settings className="h-5 w-5 opacity-70" />
+              <ClientOnlyIcon>
+                <Settings className="h-5 w-5 opacity-70" />
+              </ClientOnlyIcon>
               {!isCollapsed && <span className="ml-3">Settings</span>}
             </Button>
 
@@ -214,9 +239,13 @@ const Navigation = () => {
                 className="text-muted-foreground"
               >
                 {theme === "dark" ? (
-                  <Sun className="h-5 w-5 opacity-70" />
+                  <ClientOnlyIcon>
+                    <Sun className="h-5 w-5 opacity-70" />
+                  </ClientOnlyIcon>
                 ) : (
-                  <Moon className="h-5 w-5 opacity-70" />
+                  <ClientOnlyIcon>
+                    <Moon className="h-5 w-5 opacity-70" />
+                  </ClientOnlyIcon>
                 )}
                 <span className="sr-only">Toggle theme</span>
               </Button>
@@ -232,9 +261,13 @@ const Navigation = () => {
               className="w-full text-muted-foreground mt-2"
             >
               {theme === "dark" ? (
-                <Sun className="h-5 w-5 opacity-70" />
+                <ClientOnlyIcon>
+                  <Sun className="h-5 w-5 opacity-70" />
+                </ClientOnlyIcon>
               ) : (
-                <Moon className="h-5 w-5 opacity-70" />
+                <ClientOnlyIcon>
+                  <Moon className="h-5 w-5 opacity-70" />
+                </ClientOnlyIcon>
               )}
               <span className="sr-only">Toggle theme</span>
             </Button>
@@ -250,7 +283,9 @@ const Navigation = () => {
               )}
               onClick={() => signOut()}
             >
-              <LogOut className="h-5 w-5 opacity-70" />
+              <ClientOnlyIcon>
+                <LogOut className="h-5 w-5 opacity-70" />
+              </ClientOnlyIcon>
               {!isCollapsed && <span className="ml-3">Logout</span>}
             </Button>
           )}
@@ -275,7 +310,9 @@ const Navigation = () => {
               asChild
             >
               <Link href="/login">
-                <LogOut className="h-5 w-5 opacity-70 rotate-180" />
+                <ClientOnlyIcon>
+                  <LogOut className="h-5 w-5 opacity-70 rotate-180" />
+                </ClientOnlyIcon>
                 <span className="sr-only">Login</span>
               </Link>
             </Button>
@@ -284,6 +321,6 @@ const Navigation = () => {
       </aside>
     </>
   );
-};
+}
 
 export default Navigation;

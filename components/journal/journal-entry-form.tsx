@@ -118,13 +118,22 @@ const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
     async function fetchStrategies() {
       if (!user) return;
 
-      const { data } = await supabase
-        .from("strategies")
-        .select("id, name")
-        .eq("user_id", user.id);
+      try {
+        const { data, error } = await supabase
+          .from("strategies")
+          .select("id, name")
+          .eq("user_id", user.id);
 
-      if (data) {
-        setStrategies(data);
+        if (error) {
+          console.error("Error fetching strategies:", error);
+          return;
+        }
+
+        if (data) {
+          setStrategies(data);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching strategies:", error);
       }
     }
     fetchStrategies();
@@ -156,6 +165,11 @@ const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
 
     setIsAddingStrategy(false);
     setNewStrategy("");
+  };
+
+  const handleAddNewStrategyClick = () => {
+    setOpenStrategy(false); // Close the dropdown
+    setTimeout(() => setIsAddingStrategy(true), 0); // Open the dialog immediately after
   };
 
   useEffect(() => {
@@ -358,7 +372,10 @@ const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[300px] p-0">
+                          <PopoverContent
+                            className="w-[300px] p-0"
+                            align="start"
+                          >
                             <Command>
                               <CommandInput placeholder="Search strategies..." />
                               <CommandEmpty>No strategy found.</CommandEmpty>
@@ -393,50 +410,43 @@ const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
                                   </CommandItem>
                                 )}
                               </CommandGroup>
-                              <CommandGroup>
-                                <Dialog
-                                  open={isAddingStrategy}
-                                  onOpenChange={setIsAddingStrategy}
-                                >
-                                  <DialogTrigger asChild>
-                                    <CommandItem
-                                      onSelect={() => {
-                                        setIsAddingStrategy(true);
-                                        return false; // Prevent default behavior
-                                      }}
+                              <Dialog
+                                open={isAddingStrategy}
+                                onOpenChange={setIsAddingStrategy}
+                              >
+                                <DialogTrigger asChild>
+                                  <CommandItem
+                                    onSelect={handleAddNewStrategyClick}
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add new strategy
+                                  </CommandItem>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Add New Strategy</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="flex items-center space-x-2">
+                                    <Input
+                                      value={newStrategy}
+                                      onChange={(e) =>
+                                        setNewStrategy(e.target.value)
+                                      }
+                                      placeholder="Enter strategy name"
+                                    />
+                                    <Button
+                                      onClick={handleAddStrategy}
+                                      disabled={loading}
                                     >
-                                      <Plus className="mr-2 h-4 w-4" />
-                                      Add new strategy
-                                    </CommandItem>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>
-                                        Add New Strategy
-                                      </DialogTitle>
-                                    </DialogHeader>
-                                    <div className="flex items-center space-x-2">
-                                      <Input
-                                        value={newStrategy}
-                                        onChange={(e) =>
-                                          setNewStrategy(e.target.value)
-                                        }
-                                        placeholder="Enter strategy name"
-                                      />
-                                      <Button
-                                        onClick={handleAddStrategy}
-                                        disabled={loading}
-                                      >
-                                        {loading ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                          "Add"
-                                        )}
-                                      </Button>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              </CommandGroup>
+                                      {loading ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        "Add"
+                                      )}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
                             </Command>
                           </PopoverContent>
                         </Popover>
