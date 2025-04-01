@@ -17,7 +17,7 @@ export default function NewJournalEntryPage() {
   const handleSubmit = async (data: any) => {
     if (!user) {
       toast({
-        title: "Authentication required",
+        title: "Authentication is required",
         description: "You need to be logged in to add a journal entry.",
         variant: "destructive",
       });

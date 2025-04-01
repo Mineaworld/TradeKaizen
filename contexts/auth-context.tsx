@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Session, User } from "@supabase/supabase-js";
 
@@ -25,71 +25,49 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+// Create a mock session for development
+const mockSession: Session = {
+  access_token: "mock_token",
+  token_type: "bearer",
+  expires_in: 3600,
+  refresh_token: "mock_refresh",
+  user: {
+    id: "d0d4c65e-f0c4-4f3a-b1f0-c3c7e3e6b0b0",
+    aud: "authenticated",
+    email: "dev@example.com",
+    role: "authenticated",
+    email_confirmed_at: new Date().toISOString(),
+    phone: "",
+    confirmed_at: new Date().toISOString(),
+    last_sign_in_at: new Date().toISOString(),
+    app_metadata: {
+      provider: "email",
+      providers: ["email"],
+    },
+    user_metadata: {
+      full_name: "Development User",
+    },
+    identities: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  expires_at: 9999999999,
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Get session from storage and set if exists
-    const setSessionFromStorage = async () => {
-      const {
-        data: { session: storedSession },
-      } = await supabase.auth.getSession();
-      setSession(storedSession);
-      setUser(storedSession?.user ?? null);
-      setIsLoading(false);
-    };
-
-    setSessionFromStorage();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { data: data.session, error };
-  };
-
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    return { data, error };
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-  };
-
+  // Provide mock values for development
   const value = {
-    user,
-    session,
-    isLoading,
-    signIn,
-    signUp,
-    signOut,
+    user: mockSession.user,
+    session: mockSession,
+    isLoading: false,
+    signIn: async () => ({ data: mockSession, error: null }),
+    signUp: async () => ({
+      data: { user: mockSession.user, session: mockSession },
+      error: null,
+    }),
+    signOut: async () => {},
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

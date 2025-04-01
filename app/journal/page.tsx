@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { JournalEntry } from "@/types/supabase";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,17 @@ import { useToast } from "@/components/ui/use-toast";
 import JournalEntryList from "@/components/journal/journal-entry-list";
 import JournalEntryForm from "@/components/journal/journal-entry-form";
 import JournalFilters from "@/components/journal/journal-filters";
+import TradeStatistics from "@/components/journal/trade-statistics";
 import { useAuth } from "@/contexts/auth-context";
 import { redirect, useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function adaptFormDataToEntry(
   formData: any,
@@ -46,6 +54,9 @@ export default function JournalPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">(
+    "all"
+  );
   const [filters, setFilters] = useState({
     direction: null as string | null,
     outcome: null as string | null,
@@ -78,6 +89,28 @@ export default function JournalPage() {
       fetchJournalEntries();
     }
   }, [filters]);
+
+  // Filter entries based on timeframe
+  const filteredEntries = useMemo(() => {
+    if (timeframe === "all") return entries;
+
+    const now = new Date();
+    const cutoffDate = new Date();
+
+    switch (timeframe) {
+      case "week":
+        cutoffDate.setDate(now.getDate() - 7);
+        break;
+      case "month":
+        cutoffDate.setMonth(now.getMonth() - 1);
+        break;
+      case "year":
+        cutoffDate.setFullYear(now.getFullYear() - 1);
+        break;
+    }
+
+    return entries.filter((entry) => new Date(entry.trade_date) >= cutoffDate);
+  }, [entries, timeframe]);
 
   async function fetchJournalEntries() {
     if (!user) return;
@@ -274,43 +307,97 @@ export default function JournalPage() {
     setFilters(sanitizedFilters);
   };
 
+  // Add this new function to create a sample entry
+  async function createSampleEntry() {
+    if (!user) return;
+
+    const sampleEntry = {
+      trade_date: new Date().toISOString().split("T")[0],
+      trade_pair: "BTC/USD",
+      trade_direction: "buy",
+      entry_price: 45000,
+      exit_price: 46000,
+      position_size: 1,
+      trade_outcome: "profit",
+      trade_duration: 60, // Changed to number (minutes)
+      trade_setup: "breakout",
+      trade_notes: "Good entry point based on technical analysis.",
+      emotions: "Excited",
+      trade_mistakes: "None",
+      trade_lessons: "Stick to the plan.",
+      strategy_id: null,
+      tags: ["crypto", "trading"],
+      trade_screenshot: null,
+      user_id: user.id,
+      profit_loss: 1000,
+    };
+
+    try {
+      await createEntry(sampleEntry);
+      toast({
+        title: "Sample entry created",
+        description: "A sample trade entry has been added to your journal.",
+      });
+      fetchJournalEntries();
+    } catch (error: any) {
+      toast({
+        title: "Error creating sample entry",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  }
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto py-6 space-y-8">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Trading Journal</h1>
-        <Link href="/journal/new">
-          <Button>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Entry
+        <div className="flex gap-2">
+          <Button onClick={createSampleEntry} variant="outline">
+            Add Sample Entry
           </Button>
-        </Link>
+          <Button asChild>
+            <Link href="/journal/new" className="flex items-center gap-2">
+              <PlusIcon className="w-4 h-4" /> New Entry
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <JournalFilters onApplyFilters={handleApplyFilters} />
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <JournalFilters onApplyFilters={handleApplyFilters} />
+          <Select
+            value={timeframe}
+            onValueChange={(value: "week" | "month" | "year" | "all") =>
+              setTimeframe(value)
+            }
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">Last Week</SelectItem>
+              <SelectItem value="month">Last Month</SelectItem>
+              <SelectItem value="year">Last Year</SelectItem>
+              <SelectItem value="all">All Time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      {editingEntry ? (
-        <JournalEntryForm
-          entry={editingEntry}
-          onSubmit={(formData) => {
-            // Adapt form data but omit user_id and profit_loss which shouldn't be updated directly
-            const { user_id, profit_loss, ...updatedData } =
-              adaptFormDataToEntry(formData);
-            updateEntry(editingEntry.id, updatedData);
-          }}
-          onCancel={() => setEditingEntry(null)}
-        />
-      ) : (
+        <TradeStatistics entries={filteredEntries} timeframe={timeframe} />
+
         <JournalEntryList
-          entries={entries}
+          entries={filteredEntries}
           loading={loading}
           onEdit={setEditingEntry}
           onDelete={deleteEntry}
         />
-      )}
+      </div>
     </div>
   );
 }

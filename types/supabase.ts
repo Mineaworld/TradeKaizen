@@ -34,6 +34,17 @@ export interface Database {
           trade_lessons: string | null;
           net_pnl?: number | null;
           risk_reward_ratio?: number | null;
+          stop_loss?: number | null;
+          take_profit?: number | null;
+          risk_per_trade?: number | null;
+          commission_fees?: number | null;
+          slippage?: number | null;
+          trade_quality_score?: number | null;
+          market_conditions?: string | null;
+          trade_timeframe?: string | null;
+          trade_execution_rating?: number | null;
+          trade_management_notes?: string | null;
+          trade_exit_reason?: string | null;
         };
         Insert: {
           id?: number;
@@ -59,6 +70,17 @@ export interface Database {
           trade_lessons?: string | null;
           net_pnl?: number | null;
           risk_reward_ratio?: number | null;
+          stop_loss?: number | null;
+          take_profit?: number | null;
+          risk_per_trade?: number | null;
+          commission_fees?: number | null;
+          slippage?: number | null;
+          trade_quality_score?: number | null;
+          market_conditions?: string | null;
+          trade_timeframe?: string | null;
+          trade_execution_rating?: number | null;
+          trade_management_notes?: string | null;
+          trade_exit_reason?: string | null;
         };
         Update: {
           id?: number;
@@ -84,6 +106,17 @@ export interface Database {
           trade_lessons?: string | null;
           net_pnl?: number | null;
           risk_reward_ratio?: number | null;
+          stop_loss?: number | null;
+          take_profit?: number | null;
+          risk_per_trade?: number | null;
+          commission_fees?: number | null;
+          slippage?: number | null;
+          trade_quality_score?: number | null;
+          market_conditions?: string | null;
+          trade_timeframe?: string | null;
+          trade_execution_rating?: number | null;
+          trade_management_notes?: string | null;
+          trade_exit_reason?: string | null;
         };
       };
       strategies: {
@@ -177,5 +210,5 @@ export interface Database {
   };
 }
 
-// Don't define types here but export them from the .d.ts file
+// Export types from the .d.ts file
 export type { JournalEntry, NewJournalEntry, Strategy } from "./supabase.d";

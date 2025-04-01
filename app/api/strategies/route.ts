@@ -1,61 +1,57 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { getSession } from "@/lib/session";
 
 // Get all strategies for the current user
 export async function GET() {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data, error } = await supabase
+    const { data: strategies, error } = await supabase
       .from("strategies")
       .select("*")
-      .eq("user_id", session.user.id)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(strategies);
+  } catch (error) {
+    console.error("Error fetching strategies:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch strategies" },
+      { status: 500 }
+    );
   }
 }
 
 // Create a new strategy
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { name, description } = body;
+    const { name } = body;
 
     if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Strategy name is required" },
+        { status: 400 }
+      );
     }
-
-    const strategy = {
-      name,
-      description,
-      user_id: session.user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
 
     const { data, error } = await supabase
       .from("strategies")
-      .insert(strategy)
-      .select();
+      .insert([{ name }])
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json(data[0]);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error creating strategy:", error);
+    return NextResponse.json(
+      { error: "Failed to create strategy" },
+      { status: 500 }
+    );
   }
 }
