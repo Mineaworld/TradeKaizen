@@ -351,7 +351,6 @@ export default function JournalEntryForm({
       setUploadedImages((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
-
         const newOrder = arrayMove(items, oldIndex, newIndex);
 
         // Also update the form values to maintain the same order
