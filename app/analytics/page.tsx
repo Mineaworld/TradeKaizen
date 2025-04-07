@@ -27,14 +27,27 @@ import {
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from "next-themes";
+import { Progress } from "@/components/ui/progress";
 
 const performanceData = [
-  { date: "2024-01", pnl: 2500, drawdown: -500, equity: 102500 },
-  { date: "2024-02", pnl: -1200, drawdown: -1700, equity: 101300 },
-  { date: "2024-03", pnl: 4500, drawdown: -300, equity: 105800 },
-  { date: "2024-04", pnl: 3200, drawdown: -800, equity: 109000 },
-  { date: "2024-05", pnl: -2100, drawdown: -2900, equity: 106900 },
-  { date: "2024-06", pnl: 5400, drawdown: -600, equity: 112300 },
+  { date: "2024-01", pnl: 2500, drawdown: -500, equity: 102500, change: 2.5 },
+  {
+    date: "2024-02",
+    pnl: -1200,
+    drawdown: -1700,
+    equity: 101300,
+    change: -1.2,
+  },
+  { date: "2024-03", pnl: 4500, drawdown: -300, equity: 105800, change: 4.4 },
+  { date: "2024-04", pnl: 3200, drawdown: -800, equity: 109000, change: 3.0 },
+  {
+    date: "2024-05",
+    pnl: -2100,
+    drawdown: -2900,
+    equity: 106900,
+    change: -1.9,
+  },
+  { date: "2024-06", pnl: 5400, drawdown: -600, equity: 112300, change: 5.1 },
 ];
 
 const strategyData = [
@@ -91,21 +104,21 @@ const timeframePerformance = [
   { timeframe: "D1", accuracy: 82, volume: 15 },
 ];
 
-// Updated color schemes for better visibility in both themes
+// Updated color schemes with more distinct colors
 const lightThemeColors = [
-  "hsl(222, 80%, 50%)", // Rich blue
-  "hsl(155, 75%, 45%)", // Emerald green
-  "hsl(280, 70%, 50%)", // Purple
-  "hsl(340, 75%, 50%)", // Pink
-  "hsl(30, 85%, 50%)", // Orange
+  "hsl(221, 83%, 53%)", // Bright blue
+  "hsl(142, 76%, 36%)", // Forest green
+  "hsl(346, 84%, 61%)", // Deep pink
+  "hsl(27, 96%, 61%)", // Bright orange
+  "hsl(271, 91%, 65%)", // Vibrant purple
 ];
 
 const darkThemeColors = [
-  "hsl(222, 95%, 70%)", // Bright blue
-  "hsl(155, 90%, 65%)", // Bright green
-  "hsl(280, 85%, 70%)", // Bright purple
-  "hsl(340, 90%, 70%)", // Bright pink
-  "hsl(30, 95%, 65%)", // Bright orange
+  "hsl(217, 91%, 60%)", // Lighter blue
+  "hsl(142, 71%, 45%)", // Bright green
+  "hsl(346, 89%, 70%)", // Light pink
+  "hsl(27, 96%, 67%)", // Light orange
+  "hsl(271, 81%, 70%)", // Light purple
 ];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -216,6 +229,26 @@ export default function AnalyticsPage() {
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={performanceData}>
+                      <defs>
+                        <linearGradient
+                          id="equityGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={chartColors[0]}
+                            stopOpacity={0.1}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={chartColors[0]}
+                            stopOpacity={0.01}
+                          />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid
                         strokeDasharray="3 3"
                         stroke={
@@ -223,6 +256,7 @@ export default function AnalyticsPage() {
                             ? "rgba(255,255,255,0.1)"
                             : "rgba(0,0,0,0.1)"
                         }
+                        vertical={false}
                       />
                       <XAxis
                         dataKey="date"
@@ -231,6 +265,8 @@ export default function AnalyticsPage() {
                             ? "rgba(255,255,255,0.7)"
                             : "rgba(0,0,0,0.7)"
                         }
+                        tickLine={false}
+                        axisLine={false}
                       />
                       <YAxis
                         yAxisId="left"
@@ -239,6 +275,10 @@ export default function AnalyticsPage() {
                             ? "rgba(255,255,255,0.7)"
                             : "rgba(0,0,0,0.7)"
                         }
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `$${value.toLocaleString()}`}
+                        domain={[90000, 120000]}
                       />
                       <YAxis
                         yAxisId="right"
@@ -248,36 +288,71 @@ export default function AnalyticsPage() {
                             ? "rgba(255,255,255,0.7)"
                             : "rgba(0,0,0,0.7)"
                         }
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `${value}%`}
+                        domain={[-5, 10]}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend />
                       <Area
                         yAxisId="left"
                         type="monotone"
                         dataKey="equity"
-                        fill={chartColors[0]}
+                        name="Account Balance"
                         stroke={chartColors[0]}
-                        fillOpacity={0.2}
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="pnl"
-                        stroke={chartColors[1]}
-                        dot={false}
                         strokeWidth={2}
+                        fill="url(#equityGradient)"
+                        dot={{
+                          stroke: chartColors[0],
+                          strokeWidth: 2,
+                          fill: theme === "dark" ? "#1e1e1e" : "#ffffff",
+                          r: 4,
+                        }}
                       />
-                      <Scatter
+                      <Bar
                         yAxisId="right"
-                        dataKey="drawdown"
-                        fill={
-                          theme === "dark"
-                            ? "hsl(0, 100%, 70%)"
-                            : "hsl(0, 90%, 50%)"
-                        }
-                      />
+                        dataKey="change"
+                        name="Monthly Change %"
+                        fill={chartColors[1]}
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={40}
+                      >
+                        {performanceData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.change >= 0
+                                ? chartColors[1]
+                                : theme === "dark"
+                                ? "hsl(0, 100%, 70%)"
+                                : "hsl(0, 90%, 50%)"
+                            }
+                            fillOpacity={0.7}
+                          />
+                        ))}
+                      </Bar>
                     </ComposedChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
+                    <span className="text-muted-foreground">
+                      Initial Balance
+                    </span>
+                    <span className="font-semibold">$100,000</span>
+                  </div>
+                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
+                    <span className="text-muted-foreground">
+                      Current Balance
+                    </span>
+                    <span className="font-semibold text-green-500">
+                      $112,300
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
+                    <span className="text-muted-foreground">Max Drawdown</span>
+                    <span className="font-semibold text-red-500">-$2,900</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -289,15 +364,16 @@ export default function AnalyticsPage() {
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={timeframePerformance}>
-                      <PolarGrid
+                    <ComposedChart data={timeframePerformance}>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
                         stroke={
                           theme === "dark"
                             ? "rgba(255,255,255,0.1)"
                             : "rgba(0,0,0,0.1)"
                         }
                       />
-                      <PolarAngleAxis
+                      <XAxis
                         dataKey="timeframe"
                         stroke={
                           theme === "dark"
@@ -305,31 +381,81 @@ export default function AnalyticsPage() {
                             : "rgba(0,0,0,0.7)"
                         }
                       />
-                      <PolarRadiusAxis
-                        angle={30}
-                        domain={[0, 100]}
+                      <YAxis
+                        yAxisId="left"
                         stroke={
                           theme === "dark"
                             ? "rgba(255,255,255,0.7)"
                             : "rgba(0,0,0,0.7)"
                         }
+                        domain={[0, 100]}
+                        label={{
+                          value: "Win Rate %",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: -5,
+                          style: {
+                            fill:
+                              theme === "dark"
+                                ? "rgba(255,255,255,0.7)"
+                                : "rgba(0,0,0,0.7)",
+                            fontSize: 12,
+                          },
+                        }}
                       />
-                      <Radar
-                        name="Win Rate %"
-                        dataKey="accuracy"
-                        stroke={chartColors[2]}
-                        fill={chartColors[2]}
-                        fillOpacity={0.3}
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        stroke={
+                          theme === "dark"
+                            ? "rgba(255,255,255,0.7)"
+                            : "rgba(0,0,0,0.7)"
+                        }
+                        label={{
+                          value: "Number of Trades",
+                          angle: 90,
+                          position: "insideRight",
+                          offset: 5,
+                          style: {
+                            fill:
+                              theme === "dark"
+                                ? "rgba(255,255,255,0.7)"
+                                : "rgba(0,0,0,0.7)",
+                            fontSize: 12,
+                          },
+                        }}
                       />
-                      <Radar
-                        name="Trade Volume"
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend verticalAlign="top" height={36} />
+                      <Bar
+                        yAxisId="right"
                         dataKey="volume"
-                        stroke={chartColors[3]}
+                        name="Number of Trades"
                         fill={chartColors[3]}
-                        fillOpacity={0.3}
+                        fillOpacity={0.7}
+                        radius={[4, 4, 0, 0]}
                       />
-                      <Legend />
-                    </RadarChart>
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="accuracy"
+                        name="Win Rate %"
+                        stroke={chartColors[2]}
+                        strokeWidth={3}
+                        dot={{
+                          stroke: chartColors[2],
+                          strokeWidth: 2,
+                          fill: theme === "dark" ? "#1e1e1e" : "#ffffff",
+                          r: 4,
+                        }}
+                        activeDot={{
+                          stroke: chartColors[2],
+                          strokeWidth: 2,
+                          fill: chartColors[2],
+                          r: 6,
+                        }}
+                      />
+                    </ComposedChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
