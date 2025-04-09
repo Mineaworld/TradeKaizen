@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BarChart } from "lucide-react";
-// import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { motion } from "framer-motion";
 
 const navVariants = {
@@ -82,7 +82,7 @@ export default function PublicNav() {
             variants={itemVariants}
             transition={{ duration: 0.3, delay: 0.5 }}
           >
-            {/* <ThemeToggle /> */}
+            <ThemeToggle />
             <Button
               variant="ghost"
               asChild
