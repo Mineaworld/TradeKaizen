@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import Navigation from "@/components/navigation";
 import { AuthProvider } from "@/contexts/auth-context";
 import { StrategyProvider } from "@/contexts/strategy-context";
+import { RootLayoutContent } from "./root-layout-content";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,16 +31,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <div className="flex min-h-screen bg-background">
-                <Navigation />
-                <div className="flex-1 transition-all duration-300 md:ml-64 sidebar-collapsed:md:ml-[70px]">
-                  <div className="md:pt-0 pt-16">
-                    <main className="container mx-auto px-4 py-6">
-                      {children}
-                    </main>
-                  </div>
-                </div>
-              </div>
+              <RootLayoutContent>{children}</RootLayoutContent>
               <Toaster />
             </ThemeProvider>
           </StrategyProvider>
