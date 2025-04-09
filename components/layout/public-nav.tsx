@@ -15,7 +15,27 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const navItems = [
+  { name: "Features", href: "features" },
+  { name: "Testimonials", href: "testimonials" },
+  { name: "Pricing", href: "pricing" },
+];
+
 export default function PublicNav() {
+  const handleScroll = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    e.preventDefault();
+    const element = document.getElementById(href);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
     <motion.nav
       initial="hidden"
@@ -40,18 +60,19 @@ export default function PublicNav() {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex gap-6 mr-4">
-            {["features", "testimonials", "pricing"].map((item, i) => (
+            {navItems.map((item, i) => (
               <motion.div
-                key={item}
+                key={item.href}
                 variants={itemVariants}
                 transition={{ duration: 0.3, delay: 0.2 + i * 0.1 }}
               >
-                <Link
-                  href={`#${item}`}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                <a
+                  href={`#${item.href}`}
+                  onClick={(e) => handleScroll(e, item.href)}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                 >
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </Link>
+                  {item.name}
+                </a>
               </motion.div>
             ))}
           </div>
