@@ -5,14 +5,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
 import { StrategyProvider } from "@/contexts/strategy-context";
-import { RootLayoutContent } from "./root-layout-content";
+import { MobileNav } from "@/components/mobile-nav";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Trading Journal",
+  title: "TradeKaizen - Master Your Trading Journey",
   description:
-    "Your comprehensive trading journal and data management platform",
+    "Your all-in-one trading journal platform for analyzing patterns, tracking performance, and refining trading strategies.",
 };
 
 export default function RootLayout({
@@ -31,7 +31,8 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <RootLayoutContent>{children}</RootLayoutContent>
+              <MobileNav />
+              <main className="min-h-screen">{children}</main>
               <Toaster />
             </ThemeProvider>
           </StrategyProvider>
