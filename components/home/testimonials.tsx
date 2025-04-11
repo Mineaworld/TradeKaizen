@@ -4,23 +4,23 @@ const testimonials = [
   {
     quote:
       "TradeKaizen has transformed my approach to trading. The analytics enable me to better track my performance, and my win rate has improved by 25% since I started using it.",
-    author: "Michael S.",
-    role: "Day Trader, 5 years experience",
-    avatar: "/images/avatars/avatar-1.jpg",
+    author: "TJR",
+    role: "Millionaire Trader",
+    avatar: "/images/avatars/tjr.jpg",
   },
   {
     quote:
       "The ability to track my emotional state alongside trade performance is game-changing. I've identified patterns in my trading that were holding me back.",
-    author: "Sarah J.",
-    role: "Swing Trader, 3 years experience",
-    avatar: "/images/avatars/avatar-2.jpg",
+    author: "ZENN28",
+    role: "Profitable Trader, +4 years experience",
+    avatar: "/images/avatars/Zen.jpg",
   },
   {
     quote:
       "As a trading coach, I recommend TradeKaizen to all my students. The detailed analytics and strategy testing tools are invaluable for improving trading results.",
-    author: "David T.",
+    author: "Umar Ashraf",
     role: "Professional Trader & Coach",
-    avatar: "/images/avatars/avatar-3.jpg",
+    avatar: "/images/avatars/UmarAshraf.jpg",
   },
 ];
 
