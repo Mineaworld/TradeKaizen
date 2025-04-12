@@ -12,7 +12,6 @@ import {
   ArrowDown,
   Loader2,
   ImageIcon,
-  PlusCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form as FormRoot } from "@/components/ui/form"; // Add this import
@@ -43,12 +42,7 @@ import { useStrategies } from "@/contexts/strategy-context";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { supabase, storageHelper } from "@/lib/supabase";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DndContext,
   closestCenter,
@@ -67,16 +61,6 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
-import TradeMetricsForm from "./trade-metrics-form";
-import { ImageUploader } from "@/components/ui/image-uploader";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { Strategy as StrategyType } from "@/types/strategy";
-import { Database } from "@/types/supabase";
-import { toast } from "@/components/ui/use-toast";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
 
 interface JournalEntryFormProps {
   onSubmit: (data: any) => void;
@@ -156,45 +140,6 @@ const SortableImageItem = ({
   );
 };
 
-// Add form validation schema
-const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  entry_date: z.date(),
-  trade_direction: z.enum(["LONG", "SHORT"], {
-    required_error: "Please select a trade direction",
-  }),
-  entry_price: z.string().min(1, "Entry price is required"),
-  exit_price: z.string().min(1, "Exit price is required"),
-  position_size: z.string().min(1, "Position size is required"),
-  summary: z.string().min(1, "Summary is required"),
-  lessons_learned: z.string().optional(),
-  strategy_id: z.string().min(1, "Please select a strategy"),
-  trading_pair: z.string().min(1, "Please select a trading pair"),
-  chart_images: z.array(z.string()).optional(),
-  trade_screenshot: z.array(z.string()).optional(),
-  stop_loss: z.string().optional(),
-  take_profit: z.string().optional(),
-  risk_reward_ratio: z.string().optional(),
-  risk_per_trade: z.string().optional(),
-  commission_fees: z.string().optional(),
-  slippage: z.string().optional(),
-  trade_quality_score: z.string().optional(),
-  market_conditions: z.string().optional(),
-  trade_timeframe: z.string().optional(),
-  trade_execution_rating: z.string().optional(),
-  trade_management_notes: z.string().optional(),
-  trade_exit_reason: z.string().optional(),
-});
-
-// Define Strategy type if not already defined
-interface Strategy {
-  id: number;
-  name: string;
-}
-
-// Define the type for the strategy response
-type StrategyResponse = Database["public"]["Tables"]["strategies"]["Row"];
-
 export default function JournalEntryForm({
   onSubmit,
   onCancel,
@@ -206,13 +151,8 @@ export default function JournalEntryForm({
   >([]);
   const [isUploading, setIsUploading] = useState(false);
   const [tradingPairs, setTradingPairs] = useState<string[]>([]);
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isStrategyModalOpen, setStrategyModalOpen] = useState(false);
-  const [isTradingPairModalOpen, setTradingPairModalOpen] = useState(false);
-  const [newStrategyName, setNewStrategyName] = useState("");
-  const [newTradingPair, setNewTradingPair] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -222,51 +162,37 @@ export default function JournalEntryForm({
   );
 
   const form = useForm({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       title: defaultValues?.title || "",
       entry_date: defaultValues?.entry_date
         ? new Date(defaultValues.entry_date)
         : new Date(),
       trade_direction: defaultValues?.trade_direction || "",
-      entry_price: defaultValues?.entry_price?.toString() || "",
-      exit_price: defaultValues?.exit_price?.toString() || "",
-      position_size: defaultValues?.position_size?.toString() || "",
+      entry_price: defaultValues?.entry_price || "",
+      exit_price: defaultValues?.exit_price || "",
+      position_size: defaultValues?.position_size || "",
       summary: defaultValues?.summary || "",
       lessons_learned: defaultValues?.lessons_learned || "",
-      strategy_id: defaultValues?.strategy_id?.toString() || "",
+      strategy_id: defaultValues?.strategy_id || "",
       trading_pair: defaultValues?.trading_pair || "",
       chart_images: defaultValues?.chart_images || [],
-      trade_screenshot: defaultValues?.trade_screenshot || [],
-      stop_loss: defaultValues?.stop_loss?.toString() || "",
-      take_profit: defaultValues?.take_profit?.toString() || "",
-      risk_reward_ratio: defaultValues?.risk_reward_ratio?.toString() || "",
-      risk_per_trade: defaultValues?.risk_per_trade?.toString() || "",
-      commission_fees: defaultValues?.commission_fees?.toString() || "",
-      slippage: defaultValues?.slippage?.toString() || "",
-      trade_quality_score: defaultValues?.trade_quality_score?.toString() || "",
-      market_conditions: defaultValues?.market_conditions || "",
-      trade_timeframe: defaultValues?.trade_timeframe || "",
-      trade_execution_rating:
-        defaultValues?.trade_execution_rating?.toString() || "",
-      trade_management_notes: defaultValues?.trade_management_notes || "",
-      trade_exit_reason: defaultValues?.trade_exit_reason || "",
     },
   });
 
-  // Fetch strategies from context or API
-  useEffect(() => {
-    async function fetchStrategies() {
-      const { data, error } = await supabase
-        .from("strategies")
-        .select("id, name");
+  // Get strategies from context - with proper error handling
+  const { strategies = [], isLoading: isStrategiesLoading } = useStrategies();
 
-      if (!error && data) {
-        setStrategies(data);
-      }
-    }
-    fetchStrategies();
-  }, []);
+  // Debug log to help identify issues
+  useEffect(() => {
+    console.log(
+      "Strategies loaded:",
+      strategies,
+      "isArray:",
+      Array.isArray(strategies),
+      "length:",
+      strategies?.length
+    );
+  }, [strategies]);
 
   // Fetch trading pairs
   useEffect(() => {
@@ -351,6 +277,7 @@ export default function JournalEntryForm({
       setUploadedImages((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
+
         const newOrder = arrayMove(items, oldIndex, newIndex);
 
         // Also update the form values to maintain the same order
@@ -400,85 +327,9 @@ export default function JournalEntryForm({
     }
   };
 
-  const handleImagesUploaded = (urls: string[]) => {
-    const currentImages = form.getValues("trade_screenshot") || [];
-    form.setValue("trade_screenshot", [...currentImages, ...urls]);
-  };
-
-  const handleImageRemoved = (url: string) => {
-    const currentImages = form.getValues("trade_screenshot") || [];
-    form.setValue(
-      "trade_screenshot",
-      currentImages.filter((img: string) => img !== url)
-    );
-  };
-
-  // Function to handle creating a new strategy
-  const handleCreateStrategy = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("strategies")
-        .insert([{ name: newStrategyName }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        // Update strategies list with properly typed data
-        setStrategies((prev) => [...prev, { id: data.id, name: data.name }]);
-
-        // Close modal and reset state
-        setStrategyModalOpen(false);
-        setNewStrategyName("");
-      }
-    } catch (error) {
-      console.error("Error creating strategy:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create strategy. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Function to handle creating a new trading pair
-  const handleCreateTradingPair = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("custom_trading_pairs")
-        .insert([{ pair_name: newTradingPair }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        // Update trading pairs list
-        setTradingPairs((prev) => [...prev, data.pair_name]);
-
-        // Close modal and reset state
-        setTradingPairModalOpen(false);
-        setNewTradingPair("");
-
-        toast({
-          title: "Success",
-          description: "Trading pair created successfully.",
-        });
-      }
-    } catch (error) {
-      console.error("Error creating trading pair:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create trading pair. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <FormRoot {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Title */}
           <FormField
@@ -535,57 +386,37 @@ export default function JournalEntryForm({
             )}
           />
 
-          {/* Strategy Selection */}
+          {/* Strategy - With proper error handling */}
           <FormField
             control={form.control}
             name="strategy_id"
             render={({ field }) => (
-              <FormItem className="w-full">
+              <FormItem>
                 <FormLabel>Strategy</FormLabel>
                 <Select
-                  onValueChange={(value) => {
-                    if (value === "create-new") {
-                      setStrategyModalOpen(true);
-                      return;
-                    }
-                    field.onChange(value);
-                  }}
-                  value={field.value}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select a strategy" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {strategies.length === 0 ? (
-                      <div className="p-2">
-                        <Skeleton className="h-5 w-full" />
-                        <Skeleton className="h-5 w-full mt-2" />
-                        <Skeleton className="h-5 w-full mt-2" />
-                      </div>
+                    {isStrategiesLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Loading strategies...
+                      </SelectItem>
+                    ) : Array.isArray(strategies) && strategies.length > 0 ? (
+                      strategies.map((strategy) => (
+                        <SelectItem key={strategy.id} value={strategy.id}>
+                          {strategy.name}
+                        </SelectItem>
+                      ))
                     ) : (
-                      <>
-                        {strategies.map((strategy) => (
-                          <SelectItem
-                            key={strategy.id}
-                            value={strategy.id.toString()}
-                          >
-                            {strategy.name}
-                          </SelectItem>
-                        ))}
-                        <Separator className="my-2" />
-                        <button
-                          className="w-full flex items-center gap-2 p-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground relative cursor-default select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStrategyModalOpen(true);
-                          }}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          Create New Strategy
-                        </button>
-                      </>
+                      <SelectItem value="none" disabled>
+                        No strategies available
+                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -599,44 +430,20 @@ export default function JournalEntryForm({
             control={form.control}
             name="trade_direction"
             render={({ field }) => (
-              <FormItem className="w-full">
+              <FormItem>
                 <FormLabel>Trade Direction</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select direction">
-                        {field.value === "LONG" && (
-                          <div className="flex items-center gap-2">
-                            <ArrowUp className="w-4 h-4 text-green-500" />
-                            Long
-                          </div>
-                        )}
-                        {field.value === "SHORT" && (
-                          <div className="flex items-center gap-2">
-                            <ArrowDown className="w-4 h-4 text-red-500" />
-                            Short
-                          </div>
-                        )}
-                      </SelectValue>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select direction" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="LONG">
-                      <div className="flex items-center gap-2">
-                        <ArrowUp className="w-4 h-4 text-green-500" />
-                        Long
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="SHORT">
-                      <div className="flex items-center gap-2">
-                        <ArrowDown className="w-4 h-4 text-red-500" />
-                        Short
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="LONG">Long</SelectItem>
+                    <SelectItem value="SHORT">Short</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -709,49 +516,23 @@ export default function JournalEntryForm({
             control={form.control}
             name="trading_pair"
             render={({ field }) => (
-              <FormItem className="w-full">
+              <FormItem>
                 <FormLabel>Trading Pair</FormLabel>
                 <Select
-                  onValueChange={(value) => {
-                    if (value === "create-new") {
-                      setTradingPairModalOpen(true);
-                      return;
-                    }
-                    field.onChange(value);
-                  }}
-                  value={field.value}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select trading pair" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {tradingPairs.length === 0 ? (
-                      <div className="p-2">
-                        <Skeleton className="h-5 w-full" />
-                        <Skeleton className="h-5 w-full mt-2" />
-                      </div>
-                    ) : (
-                      <>
-                        {tradingPairs.map((pair) => (
-                          <SelectItem key={pair} value={pair}>
-                            {pair}
-                          </SelectItem>
-                        ))}
-                        <Separator className="my-2" />
-                        <button
-                          className="w-full flex items-center gap-2 p-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground relative cursor-default select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setTradingPairModalOpen(true);
-                          }}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          Create New Trading Pair
-                        </button>
-                      </>
-                    )}
+                    {tradingPairs.map((pair) => (
+                      <SelectItem key={pair} value={pair}>
+                        {pair}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -760,26 +541,114 @@ export default function JournalEntryForm({
           />
         </div>
 
-        {/* Replace old image upload with new ImageUploader */}
-        <FormField
-          control={form.control}
-          name="trade_screenshot"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Chart Screenshots</FormLabel>
-              <FormControl>
-                <ImageUploader
-                  existingImages={field.value || []}
-                  onImagesUploaded={handleImagesUploaded}
-                  onImageRemoved={handleImageRemoved}
-                  maxImages={5}
-                  className="mt-2"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        {/* Enhanced Image Upload Section */}
+        <div className="space-y-4 col-span-2">
+          <FormLabel>Chart Images</FormLabel>
+          <div
+            {...getRootProps()}
+            onClick={handleUploadClick} // Add this handler
+            className={cn(
+              "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
+              isDragActive
+                ? "border-primary bg-primary/5 scale-102"
+                : "border-muted",
+              "hover:border-primary hover:bg-primary/5 cursor-pointer"
+            )}
+          >
+            <input {...getInputProps()} ref={fileInputRef} accept="image/*" />
+            {isUploading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Uploading images...
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="p-4 rounded-full bg-muted/50">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    Drop your chart images here or click to upload
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Supports: PNG, JPG, GIF (up to 10MB each)
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Image Preview Section - Updated to ensure buttons work */}
+          {uploadedImages.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <div className="flex justify-between items-center">
+                <h4 className="text-sm font-medium">
+                  Uploaded Images ({uploadedImages.length})
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Click to preview • Drag to reorder
+                </p>
+              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToParentElement]}
+              >
+                <SortableContext
+                  items={uploadedImages.map((img) => img.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    {uploadedImages.map((image, index) => (
+                      <SortableImageItem
+                        key={image.id}
+                        id={image.id}
+                        url={image.url}
+                        index={index}
+                        onRemove={() => handleRemoveImage(index)}
+                        onPreview={() => handlePreviewImage(image.url)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
           )}
-        />
+
+          {/* Enhanced Image Preview Dialog */}
+          <Dialog
+            open={!!previewImage}
+            onOpenChange={(open) => {
+              if (!open) setPreviewImage(null);
+            }}
+          >
+            <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] p-1 overflow-hidden">
+              {previewImage && (
+                <div className="relative w-full h-[85vh]">
+                  <Image
+                    src={previewImage}
+                    alt="Chart preview"
+                    fill
+                    className="object-contain"
+                    sizes="95vw"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                    onClick={() => setPreviewImage(null)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {/* Trade Summary */}
         <FormField
@@ -819,12 +688,6 @@ export default function JournalEntryForm({
           )}
         />
 
-        {/* Add Trade Metrics Form */}
-        <div className="border rounded-lg p-6 bg-card">
-          <h2 className="text-xl font-semibold mb-6">Trade Metrics</h2>
-          <TradeMetricsForm />
-        </div>
-
         {/* Form Actions */}
         <div className="flex justify-end space-x-4">
           <Button
@@ -836,88 +699,10 @@ export default function JournalEntryForm({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Entry"
-            )}
+            {isSubmitting ? "Saving..." : "Save Entry"}
           </Button>
         </div>
       </form>
-
-      {/* Strategy Creation Modal */}
-      <Dialog open={isStrategyModalOpen} onOpenChange={setStrategyModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogTitle>Create New Strategy</DialogTitle>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Strategy Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter strategy name"
-                value={newStrategyName}
-                onChange={(e) => setNewStrategyName(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setStrategyModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleCreateStrategy}
-              disabled={!newStrategyName.trim()}
-            >
-              Create Strategy
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Trading Pair Creation Modal */}
-      <Dialog
-        open={isTradingPairModalOpen}
-        onOpenChange={setTradingPairModalOpen}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogTitle>Create New Trading Pair</DialogTitle>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="pair">Trading Pair</Label>
-              <Input
-                id="pair"
-                placeholder="e.g., BTC/USD"
-                value={newTradingPair}
-                onChange={(e) => setNewTradingPair(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setTradingPairModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleCreateTradingPair}
-              disabled={!newTradingPair.trim()}
-            >
-              Create Trading Pair
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </FormRoot>
   );
 }
