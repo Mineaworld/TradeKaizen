@@ -1,4 +1,5 @@
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Footer } from "@/components/footer";
 
 export default function MarketingLayout({
   children,
@@ -52,13 +53,7 @@ export default function MarketingLayout({
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t py-6 md:py-0">
-        <div className="container flex h-14 items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            © 2024 TradeKaizen. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

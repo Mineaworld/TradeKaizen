@@ -4,7 +4,7 @@ import Testimonials from "../../components/home/testimonials";
 import Pricing from "../../components/home/pricing";
 import CallToAction from "../../components/home/call-to-action";
 import PublicNav from "../../components/layout/public-nav";
-import Footer from "../../components/layout/footer";
+import { Footer } from "@/components/footer";
 
 export default function HomePage() {
   return (
