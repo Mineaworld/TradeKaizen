@@ -116,9 +116,7 @@ export function Navigation() {
         className={cn(
           "fixed top-0 bottom-0 left-0 z-40 flex flex-col bg-background border-r transition-all duration-300 ease-in-out",
           isCollapsed ? "w-[70px]" : "w-64",
-          isMobileSidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full md:translate-x-0"
+          "translate-x-0"
         )}
       >
         {/* Sidebar Header */}

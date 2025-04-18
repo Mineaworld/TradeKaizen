@@ -17,7 +17,11 @@ import {
   BarChart3,
   BookOpen,
   Menu,
-  X,
+  Calendar,
+  FileText,
+  BookMarked,
+  StickyNote,
+  Settings,
   LogIn,
   UserPlus,
   ChevronRight,
@@ -32,16 +36,49 @@ const menuItems = [
     description: "Return to the homepage",
   },
   {
+    name: "Journal",
+    href: "/journal",
+    icon: BookMarked,
+    description: "Track your trades and insights",
+  },
+  {
     name: "Analytics",
     href: "/analytics",
     icon: BarChart3,
     description: "View your trading performance",
   },
+];
+
+const expandedMenuItems = [
   {
-    name: "Learn",
-    href: "/learn",
+    name: "Calendar",
+    href: "/calendar",
+    icon: Calendar,
+    description: "View your trading schedule",
+  },
+  {
+    name: "Strategies",
+    href: "/strategies",
+    icon: FileText,
+    description: "Manage your trading strategies",
+  },
+  {
+    name: "Resources",
+    href: "/resources",
     icon: BookOpen,
     description: "Trading education resources",
+  },
+  {
+    name: "Notes",
+    href: "/notes",
+    icon: StickyNote,
+    description: "Your trading notes and ideas",
+  },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+    description: "Manage your account settings",
   },
 ];
 
@@ -55,7 +92,7 @@ export function MobileNav() {
       {/* Mobile Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 md:hidden border-t bg-background/80 backdrop-blur-lg z-50">
         <div className="grid grid-cols-4 gap-1 p-2">
-          {menuItems.map((item, index) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -93,8 +130,38 @@ export function MobileNav() {
                   <span className="text-primary">Trade</span>Kaizen
                 </SheetTitle>
               </SheetHeader>
-              <div className="py-2">
+              <div className="py-2 overflow-y-auto max-h-[calc(100vh-8rem)]">
+                {/* Quick Access Menu Items */}
                 {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        "flex items-center px-4 py-3 hover:bg-accent transition-colors",
+                        isActive && "text-primary"
+                      )}
+                    >
+                      <Icon className="h-5 w-5 mr-3" />
+                      <div className="flex-1">
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.description}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  );
+                })}
+
+                {/* Divider */}
+                <div className="h-px bg-border my-2" />
+
+                {/* Extended Menu Items */}
+                {expandedMenuItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
                   return (

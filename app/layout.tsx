@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
 import { StrategyProvider } from "@/contexts/strategy-context";
-import { MobileNav } from "@/components/mobile-nav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,8 +30,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <MobileNav />
-              <main className="min-h-screen">{children}</main>
+              {children}
               <Toaster />
             </ThemeProvider>
           </StrategyProvider>
