@@ -31,9 +31,9 @@ import { useAuth } from "@/contexts/auth-context";
 const menuItems = [
   {
     name: "Home",
-    href: "/",
+    href: "#hero",
     icon: Home,
-    description: "Return to the homepage",
+    description: "Return to the hero section",
   },
   {
     name: "Journal",

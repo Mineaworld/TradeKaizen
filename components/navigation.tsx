@@ -45,7 +45,7 @@ export function Navigation() {
   }, [isCollapsed]);
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Home", href: "#hero", icon: Home },
     { name: "Journal", href: "/journal", icon: BookMarked },
     { name: "Calendar", href: "/calendar", icon: Calendar },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },

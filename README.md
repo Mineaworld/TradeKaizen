@@ -12,21 +12,29 @@ TradeKaizen is a modern web application built with Next.js 14, featuring a sophi
 - **Dark Mode Support**: Built-in theme switching with next-themes
 - **Interactive Charts**: Data visualization using Recharts
 - **Form Handling**: Robust form management with React Hook Form and Zod validation
+- **Smooth Navigation**: Seamless scroll-to-section functionality using react-scroll
 
 ## 🧭 Navigation Structure
 
-The application follows a clean, intuitive routing structure:
+The application features an intuitive navigation system:
 
-- `/home` - Landing page and main dashboard
-- `/dashboard` - Trading dashboard and analytics
-- `/strategies` - Trading strategies management
-- `/journal` - Trading journal entries
-- `/calendar` - Schedule and important dates
-- `/analytics` - Detailed performance analytics
-- `/resources` - Trading resources and documentation
-- `/notes` - Personal trading notes
+### Main Navigation Bar
+
+- `Home` - Scrolls to the hero section on the landing page
+- `Dashboard` - Trading dashboard and analytics
+- `Strategies` - Trading strategies management
+- `Journal` - Trading journal entries
+- `Calendar` - Schedule and important dates
+- `Analytics` - Detailed performance analytics
+- `Resources` - Trading resources and documentation
+- `Notes` - Personal trading notes
+
+### Authentication Routes
+
 - `/login` - User authentication
 - `/register` - New user registration
+
+The navbar implements smooth scrolling using `react-scroll` for the Home link, providing a seamless user experience when navigating to the hero section. Other navigation items use Next.js routing for page transitions.
 
 To ensure the application redirects to the home page by default, you'll need to update your `next.config.js`:
 

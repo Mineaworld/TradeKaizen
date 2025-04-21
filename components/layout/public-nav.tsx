@@ -16,6 +16,7 @@ const itemVariants = {
 };
 
 const navItems = [
+  { name: "Home", href: "hero" },
   { name: "Features", href: "features" },
   { name: "Testimonials", href: "testimonials" },
   { name: "Pricing", href: "pricing" },
