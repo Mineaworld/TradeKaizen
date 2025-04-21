@@ -163,7 +163,7 @@ export default function Hero() {
                         Win Rate
                       </div>
                       <div className="text-base sm:text-lg md:text-xl font-bold text-primary">
-                        68.5%
+                        69%
                       </div>
                       <div className="text-[10px] sm:text-xs text-muted-foreground">
                         199 trades total
