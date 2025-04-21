@@ -38,13 +38,19 @@ export default function Hero() {
       {strategyData.map((item) => (
         <div
           key={item.name}
-          className="bg-card/50 p-3 rounded-lg border border-border/50"
+          className="bg-white dark:bg-card/50 p-3 rounded-lg border shadow-sm"
         >
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">{item.name}</span>
+            <span className="text-sm font-medium text-foreground">
+              {item.name}
+            </span>
             <div className="space-x-4">
-              <span className="text-sm text-primary">{item.winRate}%</span>
-              <span className="text-sm text-primary/70">${item.avgProfit}</span>
+              <span className="text-sm font-semibold text-primary">
+                {item.winRate}%
+              </span>
+              <span className="text-sm font-medium text-primary/80">
+                ${item.avgProfit}
+              </span>
             </div>
           </div>
         </div>
@@ -57,13 +63,19 @@ export default function Hero() {
       {riskRewardData.map((item) => (
         <div
           key={item.name}
-          className="bg-card/50 p-3 rounded-lg border border-border/50"
+          className="bg-white dark:bg-card/50 p-3 rounded-lg border shadow-sm"
         >
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">{item.name}</span>
+            <span className="text-sm font-medium text-foreground">
+              {item.name}
+            </span>
             <div className="space-x-4">
-              <span className="text-sm text-primary">{item.trades} trades</span>
-              <span className="text-sm text-primary/70">{item.ratio}:1</span>
+              <span className="text-sm font-semibold text-primary">
+                {item.trades} trades
+              </span>
+              <span className="text-sm font-medium text-primary/80">
+                {item.ratio}:1
+              </span>
             </div>
           </div>
         </div>
@@ -72,9 +84,9 @@ export default function Hero() {
   );
 
   return (
-    <section className="relative overflow-hidden border-b">
+    <section className="relative overflow-hidden border-b bg-gradient-to-b from-background to-white dark:to-background">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative py-12 sm:py-16 lg:py-20 max-w-7xl mx-auto">
@@ -87,13 +99,13 @@ export default function Hero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-foreground">
                   Master Your{" "}
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
                     Trading Journey
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90">
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
                   TradeKaizen is your all-in-one trading journal platform,
                   crafted to empower you in analyzing patterns, tracking
                   performance, and refining your trading strategies.
@@ -108,7 +120,7 @@ export default function Hero() {
                 <Button
                   asChild
                   size="lg"
-                  className="w-full sm:w-auto text-base font-medium"
+                  className="w-full sm:w-auto text-base font-medium bg-primary hover:bg-primary/90"
                 >
                   <Link href="/register">Get Started for Free</Link>
                 </Button>
@@ -116,7 +128,7 @@ export default function Hero() {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto text-base font-medium"
+                  className="w-full sm:w-auto text-base font-medium border-primary/20 hover:bg-primary/10"
                 >
                   <Link href="#features">Explore Analytics</Link>
                 </Button>
@@ -130,12 +142,12 @@ export default function Hero() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background via-background/50 to-background/10 rounded-xl border border-border/50 shadow-2xl overflow-hidden backdrop-blur-sm">
+              <div className="relative w-full aspect-[4/3] bg-white dark:bg-gradient-to-br dark:from-background dark:via-background/50 dark:to-background/10 rounded-xl border shadow-xl overflow-hidden backdrop-blur-sm">
                 {/* Dashboard Preview Content */}
                 <div className="absolute inset-0 p-4 sm:p-5 md:p-6 lg:p-8">
                   {/* Stats Row */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-                    <div className="bg-card p-2 sm:p-3 md:p-4 rounded-lg border border-border">
+                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
                       <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                         Total P&L
                       </div>
@@ -146,18 +158,18 @@ export default function Hero() {
                         +15.8% from last month
                       </div>
                     </div>
-                    <div className="bg-card p-2 sm:p-3 md:p-4 rounded-lg border border-border">
+                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
                       <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                         Win Rate
                       </div>
-                      <div className="text-base sm:text-lg md:text-xl font-bold">
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">
                         68.5%
                       </div>
                       <div className="text-[10px] sm:text-xs text-muted-foreground">
                         199 trades total
                       </div>
                     </div>
-                    <div className="bg-card p-2 sm:p-3 md:p-4 rounded-lg border border-border">
+                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
                       <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                         Avg. Profit
                       </div>
@@ -168,7 +180,7 @@ export default function Hero() {
                         Per winning trade
                       </div>
                     </div>
-                    <div className="bg-card p-2 sm:p-3 md:p-4 rounded-lg border border-border">
+                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
                       <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
                         Max Drawdown
                       </div>
@@ -183,8 +195,8 @@ export default function Hero() {
 
                   {/* Charts Section */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-                    <div className="bg-card p-4 sm:p-5 rounded-lg border border-border">
-                      <div className="text-sm font-medium mb-4">
+                    <div className="bg-white dark:bg-card p-4 sm:p-5 rounded-lg border shadow-sm">
+                      <div className="text-sm font-medium mb-4 text-foreground">
                         Strategy Performance
                       </div>
                       {isMobile ? (
@@ -240,8 +252,8 @@ export default function Hero() {
                         </div>
                       )}
                     </div>
-                    <div className="bg-card p-4 sm:p-5 rounded-lg border border-border">
-                      <div className="text-sm font-medium mb-4">
+                    <div className="bg-white dark:bg-card p-4 sm:p-5 rounded-lg border shadow-sm">
+                      <div className="text-sm font-medium mb-4 text-foreground">
                         Risk/Reward Analysis
                       </div>
                       {isMobile ? (
@@ -304,13 +316,13 @@ export default function Hero() {
                 </div>
 
                 {/* Enhanced Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-background/30 to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-l from-background/50 via-background/30 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white/50 via-white/30 to-transparent dark:from-background/50 dark:via-background/30 dark:to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-l from-white/50 via-white/30 to-transparent dark:from-background/50 dark:via-background/30 dark:to-transparent pointer-events-none" />
               </div>
 
-              {/* Floating Elements with enhanced positioning */}
+              {/* Floating Elements */}
               <motion.div
-                className="absolute -right-3 sm:-right-6 -top-3 sm:-top-6 bg-card/95 p-2.5 sm:p-3.5 rounded-lg border border-border shadow-lg backdrop-blur-sm"
+                className="absolute -right-3 sm:-right-6 -top-3 sm:-top-6 bg-white dark:bg-card/95 p-2.5 sm:p-3.5 rounded-lg border shadow-lg backdrop-blur-sm"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
@@ -318,12 +330,12 @@ export default function Hero() {
                 <TrendingUp className="w-5 h-5 sm:w-7 sm:h-7 text-green-500" />
               </motion.div>
               <motion.div
-                className="absolute -left-3 sm:-left-6 -bottom-3 sm:-bottom-6 bg-card/95 p-2.5 sm:p-3.5 rounded-lg border border-border shadow-lg backdrop-blur-sm"
+                className="absolute -left-3 sm:-left-6 -bottom-3 sm:-bottom-6 bg-white dark:bg-card/95 p-2.5 sm:p-3.5 rounded-lg border shadow-lg backdrop-blur-sm"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.8 }}
               >
-                <PieChart className="w-5 h-5 sm:w-7 sm:h-7 text-blue-500" />
+                <PieChart className="w-5 h-5 sm:w-7 sm:h-7 text-primary" />
               </motion.div>
             </motion.div>
           </div>
