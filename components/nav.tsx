@@ -1,21 +1,24 @@
-import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
+  { name: "Home", href: "/" },
   { name: "Features", href: "#features" },
+  { name: "Testimonials", href: "#testimonials" },
   { name: "Pricing", href: "#pricing" },
-  { name: "About", href: "#about" },
-  { name: "Contact", href: "#contact" },
 ];
 
 export function Nav() {
-  const [isOpen, setIsOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 640px)");
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4">
@@ -28,56 +31,68 @@ export function Nav() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden sm:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.name}
               </Link>
             ))}
-            <div className="flex items-center space-x-2">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/register">Sign Up</Link>
-              </Button>
-            </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="sm:hidden p-2 rounded-md hover:bg-accent"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className={cn("sm:hidden", isOpen ? "block" : "hidden")}>
-        <div className="px-4 py-2 space-y-1 bg-card border-t border-border">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="block px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-          <div className="grid grid-cols-2 gap-2 pt-2 pb-3">
-            <Button asChild variant="outline" size="sm" className="w-full">
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
+            <Button asChild variant="ghost" size="sm">
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild size="sm" className="w-full">
+            <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
               <Link href="/register">Sign Up</Link>
             </Button>
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="flex md:hidden items-center space-x-4">
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[200px] mt-2">
+                {navItems.map((item) => (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link
+                      href={item.href}
+                      className="w-full cursor-pointer font-medium"
+                    >
+                      {item.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/login"
+                    className="w-full cursor-pointer font-medium"
+                  >
+                    Login
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/register"
+                    className="w-full cursor-pointer font-medium text-blue-600"
+                  >
+                    Sign Up
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

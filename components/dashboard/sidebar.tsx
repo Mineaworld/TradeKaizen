@@ -13,13 +13,16 @@ import {
   LightbulbIcon,
   LineChart,
   LogOut,
+  Menu,
   Moon,
   Notebook,
-  NotebookIcon,
   Settings,
   Sun,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const sidebarLinks = [
   {
@@ -62,14 +65,15 @@ const sidebarLinks = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     // TODO: Implement logout functionality
     console.log("Logout clicked");
   };
 
-  return (
-    <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r bg-background transition-transform">
+  const SidebarContent = () => (
+    <>
       <div className="flex h-14 items-center border-b px-4">
         <Link
           href="/"
@@ -92,6 +96,7 @@ export function DashboardSidebar() {
                   "justify-start gap-2 px-4",
                   pathname === link.href && "bg-secondary"
                 )}
+                onClick={() => setIsOpen(false)}
               >
                 <Link href={link.href}>
                   <Icon className="h-4 w-4" />
@@ -144,6 +149,35 @@ export function DashboardSidebar() {
           Logout
         </Button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center border-b bg-background px-4 lg:hidden">
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="lg:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+        <div className="mx-auto">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Home className="h-5 w-5" />
+            <span>TradeKaizen</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r bg-background transition-transform lg:flex">
+        <SidebarContent />
+      </aside>
+    </>
   );
 }
