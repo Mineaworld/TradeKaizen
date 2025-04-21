@@ -18,7 +18,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 
 const strategyData = [
   { name: "Breakout", winRate: 68, avgProfit: 450 },
-  { name: "Mean Rev", winRate: 72, avgProfit: 380 },
+  { name: "Mean Reversion", winRate: 72, avgProfit: 380 },
   { name: "Trend", winRate: 65, avgProfit: 520 },
   { name: "ICT", winRate: 70, avgProfit: 480 },
 ];
@@ -90,7 +90,7 @@ export default function Hero() {
                 transition={{ duration: 0.5 }}
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-foreground">
-                  Master Your{" "}
+                  Master Your <br />
                   <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
                     Trading Journey
                   </span>
@@ -175,7 +175,7 @@ export default function Hero() {
                     </div>
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
                       <div className="text-sm text-muted-foreground mb-1">
-                        Max Drawdown
+                        Drawdown
                       </div>
                       <div className="text-lg sm:text-xl font-bold text-red-500">
                         -$2,900

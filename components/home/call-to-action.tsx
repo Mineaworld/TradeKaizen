@@ -18,7 +18,7 @@ export default function CallToAction() {
               <Link href="/register">Get Started For Free</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="#features">Schedule a Demo</Link>
+              <Link href="#features">A Demo</Link>
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
