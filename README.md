@@ -13,6 +13,40 @@ TradeKaizen is a modern web application built with Next.js 14, featuring a sophi
 - **Interactive Charts**: Data visualization using Recharts
 - **Form Handling**: Robust form management with React Hook Form and Zod validation
 
+## 🧭 Navigation Structure
+
+The application follows a clean, intuitive routing structure:
+
+- `/home` - Landing page and main dashboard
+- `/dashboard` - Trading dashboard and analytics
+- `/strategies` - Trading strategies management
+- `/journal` - Trading journal entries
+- `/calendar` - Schedule and important dates
+- `/analytics` - Detailed performance analytics
+- `/resources` - Trading resources and documentation
+- `/notes` - Personal trading notes
+- `/login` - User authentication
+- `/register` - New user registration
+
+To ensure the application redirects to the home page by default, you'll need to update your `next.config.js`:
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/home",
+        permanent: true,
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;
+```
+
 ## 🛠️ Prerequisites
 
 Before you begin, ensure you have the following installed:
