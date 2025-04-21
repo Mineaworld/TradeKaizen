@@ -14,6 +14,8 @@ import {
   LineChart,
   LogOut,
   Moon,
+  Notebook,
+  NotebookIcon,
   Settings,
   Sun,
 } from "lucide-react";
@@ -49,6 +51,11 @@ const sidebarLinks = [
     title: "Resources",
     href: "/resources",
     icon: LineChart,
+  },
+  {
+    title: "Notes",
+    href: "/notes",
+    icon: Notebook,
   },
 ];
 
