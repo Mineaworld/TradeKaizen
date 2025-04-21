@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, LineChart, PieChart } from "lucide-react";
+import { BarChart3, TrendingUp } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -12,81 +12,71 @@ import {
   AreaChart,
   Area,
   Tooltip,
+  CartesianGrid,
 } from "recharts";
-import { useEffect, useState } from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 const strategyData = [
   { name: "Breakout", winRate: 68, avgProfit: 450 },
   { name: "Mean Rev", winRate: 72, avgProfit: 380 },
-  { name: "ICT", winRate: 65, avgProfit: 520 },
+  { name: "Trend", winRate: 65, avgProfit: 520 },
+  { name: "ICT", winRate: 70, avgProfit: 480 },
 ];
 
 const riskRewardData = [
-  { name: "Trend", trades: 45, ratio: 2.1 },
-  { name: "Reversal", trades: 32, ratio: 1.8 },
-  { name: "Breakout", trades: 28, ratio: 2.4 },
-  { name: "Scalping", trades: 55, ratio: 1.5 },
-  { name: "ICT", trades: 39, ratio: 2.2 },
+  { name: "Jan", ratio: 1.8, trades: 45 },
+  { name: "Feb", ratio: 2.1, trades: 52 },
+  { name: "Mar", ratio: 1.9, trades: 48 },
+  { name: "Apr", ratio: 2.4, trades: 55 },
+  { name: "May", ratio: 2.2, trades: 50 },
+  { name: "Jun", ratio: 2.5, trades: 58 },
 ];
 
 export default function Hero() {
-  const isMobile = useMediaQuery("(max-width: 640px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const MobileStrategyView = () => (
-    <div className="space-y-3">
-      {strategyData.map((item) => (
-        <div
-          key={item.name}
-          className="bg-white dark:bg-card/50 p-3 rounded-lg border shadow-sm"
-        >
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-foreground">
-              {item.name}
-            </span>
-            <div className="space-x-4">
-              <span className="text-sm font-semibold text-primary">
-                {item.winRate}%
-              </span>
-              <span className="text-sm font-medium text-primary/80">
-                ${item.avgProfit}
-              </span>
-            </div>
-          </div>
+  const CustomTooltip = ({ active, payload, label, type }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background/95 border rounded-lg shadow-lg p-3 backdrop-blur-sm">
+          <p className="text-sm font-semibold mb-1">{label}</p>
+          {type === "strategy" ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Win Rate:{" "}
+                <span className="text-primary">{payload[0].value}%</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Avg Profit:{" "}
+                <span className="text-green-500">
+                  ${payload[0].payload.avgProfit}
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                R/R Ratio:{" "}
+                <span className="text-primary">{payload[0].value}:1</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Trades:{" "}
+                <span className="text-primary">
+                  {payload[0].payload.trades}
+                </span>
+              </p>
+            </>
+          )}
         </div>
-      ))}
-    </div>
-  );
-
-  const MobileRiskRewardView = () => (
-    <div className="space-y-3">
-      {riskRewardData.map((item) => (
-        <div
-          key={item.name}
-          className="bg-white dark:bg-card/50 p-3 rounded-lg border shadow-sm"
-        >
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-foreground">
-              {item.name}
-            </span>
-            <div className="space-x-4">
-              <span className="text-sm font-semibold text-primary">
-                {item.trades} trades
-              </span>
-              <span className="text-sm font-medium text-primary/80">
-                {item.ratio}:1
-              </span>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+      );
+    }
+    return null;
+  };
 
   return (
-    <section className="relative overflow-hidden border-b bg-gradient-to-b from-background to-white dark:to-background">
+    <section className="relative overflow-hidden border-b bg-gradient-to-b from-background via-background to-background/50">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative py-12 sm:py-16 lg:py-20 max-w-7xl mx-auto">
@@ -142,52 +132,55 @@ export default function Hero() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="relative w-full aspect-[4/3] bg-white dark:bg-gradient-to-br dark:from-background dark:via-background/50 dark:to-background/10 rounded-xl border shadow-xl overflow-hidden backdrop-blur-sm">
+              <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl overflow-hidden">
+                {/* Glass effect overlay */}
+                <div className="absolute inset-0 backdrop-blur-[2px]" />
+
                 {/* Dashboard Preview Content */}
-                <div className="absolute inset-0 p-4 sm:p-5 md:p-6 lg:p-8">
+                <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8">
                   {/* Stats Row */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
-                      <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm text-muted-foreground mb-1">
                         Total P&L
                       </div>
-                      <div className="text-base sm:text-lg md:text-xl font-bold text-green-500">
+                      <div className="text-lg sm:text-xl font-bold text-green-500">
                         +$12,307
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         +15.8% from last month
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
-                      <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm text-muted-foreground mb-1">
                         Win Rate
                       </div>
-                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">
+                      <div className="text-lg sm:text-xl font-bold text-primary">
                         69%
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         199 trades total
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
-                      <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm text-muted-foreground mb-1">
                         Avg. Profit
                       </div>
-                      <div className="text-base sm:text-lg md:text-xl font-bold text-green-500">
+                      <div className="text-lg sm:text-xl font-bold text-green-500">
                         $420
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         Per winning trade
                       </div>
                     </div>
-                    <div className="bg-white dark:bg-card p-2 sm:p-3 md:p-4 rounded-lg border shadow-sm">
-                      <div className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm text-muted-foreground mb-1">
                         Max Drawdown
                       </div>
-                      <div className="text-base sm:text-lg md:text-xl font-bold text-red-500">
+                      <div className="text-lg sm:text-xl font-bold text-red-500">
                         -$2,900
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         -2.6% from equity
                       </div>
                     </div>
@@ -195,148 +188,115 @@ export default function Hero() {
 
                   {/* Charts Section */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-                    <div className="bg-white dark:bg-card p-4 sm:p-5 rounded-lg border shadow-sm">
-                      <div className="text-sm font-medium mb-4 text-foreground">
-                        Strategy Performance
+                    <div className="bg-background/80 dark:bg-card/80 p-4 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm font-medium mb-4 text-foreground flex items-center justify-between">
+                        <span>Strategy Performance</span>
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      {isMobile ? (
-                        <MobileStrategyView />
-                      ) : (
-                        <div className="h-[140px] sm:h-[160px] lg:h-[180px] w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                              data={strategyData}
-                              margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{
-                                  fontSize: 11,
-                                  fill: "hsl(var(--muted-foreground))",
-                                }}
-                                axisLine={{ stroke: "hsl(var(--border))" }}
-                              />
-                              <YAxis
-                                hide={false}
-                                tick={{
-                                  fontSize: 11,
-                                  fill: "hsl(var(--muted-foreground))",
-                                }}
-                                axisLine={{ stroke: "hsl(var(--border))" }}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: "hsl(var(--card))",
-                                  border: "1px solid hsl(var(--border))",
-                                  borderRadius: "0.5rem",
-                                  fontSize: "12px",
-                                  padding: "8px 12px",
-                                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                                }}
-                                cursor={{ fill: "hsl(var(--muted)/0.1)" }}
-                              />
-                              <Bar
-                                dataKey="winRate"
-                                fill="hsl(var(--primary))"
-                                radius={[4, 4, 0, 0]}
-                                maxBarSize={40}
-                              />
-                              <Bar
-                                dataKey="avgProfit"
-                                fill="hsl(var(--primary)/0.3)"
-                                radius={[4, 4, 0, 0]}
-                                maxBarSize={40}
-                              />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
+                      <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={strategyData} barGap={8}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              className="stroke-muted/20"
+                            />
+                            <XAxis
+                              dataKey="name"
+                              stroke="currentColor"
+                              fontSize={12}
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <YAxis
+                              stroke="currentColor"
+                              fontSize={12}
+                              tickLine={false}
+                              axisLine={false}
+                              tickFormatter={(value) => `${value}%`}
+                            />
+                            <Tooltip
+                              content={(props) => (
+                                <CustomTooltip {...props} type="strategy" />
+                              )}
+                            />
+                            <Bar
+                              dataKey="winRate"
+                              fill="currentColor"
+                              className="fill-primary/80"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
-                    <div className="bg-white dark:bg-card p-4 sm:p-5 rounded-lg border shadow-sm">
-                      <div className="text-sm font-medium mb-4 text-foreground">
-                        Risk/Reward Analysis
+                    <div className="bg-background/80 dark:bg-card/80 p-4 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-sm font-medium mb-4 text-foreground flex items-center justify-between">
+                        <span>Risk/Reward Ratio</span>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      {isMobile ? (
-                        <MobileRiskRewardView />
-                      ) : (
-                        <div className="h-[140px] sm:h-[160px] lg:h-[180px] w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart
-                              data={riskRewardData}
-                              margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{
-                                  fontSize: 11,
-                                  fill: "hsl(var(--muted-foreground))",
-                                }}
-                                axisLine={{ stroke: "hsl(var(--border))" }}
-                              />
-                              <YAxis
-                                hide={false}
-                                tick={{
-                                  fontSize: 11,
-                                  fill: "hsl(var(--muted-foreground))",
-                                }}
-                                axisLine={{ stroke: "hsl(var(--border))" }}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: "hsl(var(--card))",
-                                  border: "1px solid hsl(var(--border))",
-                                  borderRadius: "0.5rem",
-                                  fontSize: "12px",
-                                  padding: "8px 12px",
-                                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                                }}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="trades"
-                                stackId="1"
-                                stroke="hsl(var(--primary))"
-                                fill="hsl(var(--primary)/0.2)"
-                                strokeWidth={2}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="ratio"
-                                stackId="2"
-                                stroke="hsl(var(--primary)/0.7)"
-                                fill="hsl(var(--primary)/0.1)"
-                                strokeWidth={2}
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
+                      <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={riskRewardData}>
+                            <defs>
+                              <linearGradient
+                                id="colorRatio"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="currentColor"
+                                  stopOpacity={0.2}
+                                  className="text-primary"
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="currentColor"
+                                  stopOpacity={0.05}
+                                  className="text-primary"
+                                />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              className="stroke-muted/20"
+                            />
+                            <XAxis
+                              dataKey="name"
+                              stroke="currentColor"
+                              fontSize={12}
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <YAxis
+                              stroke="currentColor"
+                              fontSize={12}
+                              tickLine={false}
+                              axisLine={false}
+                              tickFormatter={(value) => `${value}:1`}
+                            />
+                            <Tooltip
+                              content={(props) => (
+                                <CustomTooltip {...props} type="ratio" />
+                              )}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="ratio"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              className="stroke-primary"
+                              fill="url(#colorRatio)"
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Enhanced Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-white/50 via-white/30 to-transparent dark:from-background/50 dark:via-background/30 dark:to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-l from-white/50 via-white/30 to-transparent dark:from-background/50 dark:via-background/30 dark:to-transparent pointer-events-none" />
               </div>
-
-              {/* Floating Elements */}
-              <motion.div
-                className="absolute -right-3 sm:-right-6 -top-3 sm:-top-6 bg-white dark:bg-card/95 p-2.5 sm:p-3.5 rounded-lg border shadow-lg backdrop-blur-sm"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-              >
-                <TrendingUp className="w-5 h-5 sm:w-7 sm:h-7 text-green-500" />
-              </motion.div>
-              <motion.div
-                className="absolute -left-3 sm:-left-6 -bottom-3 sm:-bottom-6 bg-white dark:bg-card/95 p-2.5 sm:p-3.5 rounded-lg border shadow-lg backdrop-blur-sm"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8 }}
-              >
-                <PieChart className="w-5 h-5 sm:w-7 sm:h-7 text-primary" />
-              </motion.div>
             </motion.div>
           </div>
         </div>
