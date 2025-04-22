@@ -23,31 +23,24 @@ import {
   PolarRadiusAxis,
   Radar,
   ComposedChart,
-  Scatter,
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from "next-themes";
 import { Progress } from "@/components/ui/progress";
+import { Info } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 const performanceData = [
-  { date: "2024-01", pnl: 2500, drawdown: -500, equity: 102500, change: 2.5 },
-  {
-    date: "2024-02",
-    pnl: -1200,
-    drawdown: -1700,
-    equity: 101300,
-    change: -1.2,
-  },
-  { date: "2024-03", pnl: 4500, drawdown: -300, equity: 105800, change: 4.4 },
-  { date: "2024-04", pnl: 3200, drawdown: -800, equity: 109000, change: 3.0 },
-  {
-    date: "2024-05",
-    pnl: -2100,
-    drawdown: -2900,
-    equity: 106900,
-    change: -1.9,
-  },
-  { date: "2024-06", pnl: 5400, drawdown: -600, equity: 112300, change: 5.1 },
+  { date: "Jan", pnl: 2500, drawdown: -500, equity: 102500, change: 2.5 },
+  { date: "Feb", pnl: -1200, drawdown: -1700, equity: 101300, change: -1.2 },
+  { date: "Mar", pnl: 4500, drawdown: -300, equity: 105800, change: 4.4 },
+  { date: "Apr", pnl: 3200, drawdown: -800, equity: 109000, change: 3.0 },
+  { date: "May", pnl: -2100, drawdown: -2900, equity: 106900, change: -1.9 },
+  { date: "Jun", pnl: 5400, drawdown: -600, equity: 112300, change: 5.1 },
 ];
 
 const strategyData = [
@@ -57,6 +50,7 @@ const strategyData = [
     winRate: 68,
     avgProfit: 380,
     riskReward: 2.1,
+    description: "Trading breakouts from key support/resistance levels",
   },
   {
     name: "Trend Following",
@@ -64,6 +58,7 @@ const strategyData = [
     winRate: 72,
     avgProfit: 450,
     riskReward: 2.4,
+    description: "Following established market trends with momentum",
   },
   {
     name: "Mean Reversion",
@@ -71,6 +66,7 @@ const strategyData = [
     winRate: 65,
     avgProfit: 320,
     riskReward: 1.8,
+    description: "Trading price returns to the average after extremes",
   },
   {
     name: "Scalping",
@@ -78,6 +74,7 @@ const strategyData = [
     winRate: 58,
     avgProfit: 180,
     riskReward: 1.5,
+    description: "Quick trades capturing small price movements",
   },
   {
     name: "ICT Method",
@@ -85,69 +82,117 @@ const strategyData = [
     winRate: 75,
     avgProfit: 520,
     riskReward: 2.8,
+    description: "Institutional trading concepts and market structure",
   },
 ];
 
 const assetAllocation = [
-  { name: "Forex", value: 40, return: 12.5 },
-  { name: "Indices", value: 30, return: 15.2 },
-  { name: "Commodities", value: 20, return: 8.7 },
-  { name: "Crypto", value: 10, return: 18.4 },
+  {
+    name: "Forex",
+    value: 40,
+    return: 12.5,
+    description: "Currency pairs trading",
+  },
+  {
+    name: "Indices",
+    value: 30,
+    return: 15.2,
+    description: "Stock market indices",
+  },
+  {
+    name: "Commodities",
+    value: 20,
+    return: 8.7,
+    description: "Raw materials and resources",
+  },
+  {
+    name: "Crypto",
+    value: 10,
+    return: 18.4,
+    description: "Cryptocurrency markets",
+  },
 ];
 
 const timeframePerformance = [
-  { timeframe: "M1", accuracy: 45, volume: 120 },
-  { timeframe: "M5", accuracy: 58, volume: 85 },
-  { timeframe: "M15", accuracy: 65, volume: 65 },
-  { timeframe: "H1", accuracy: 72, volume: 45 },
-  { timeframe: "H4", accuracy: 78, volume: 25 },
-  { timeframe: "D1", accuracy: 82, volume: 15 },
+  {
+    timeframe: "M1",
+    accuracy: 45,
+    volume: 120,
+    description: "1-minute chart trades",
+  },
+  {
+    timeframe: "M5",
+    accuracy: 58,
+    volume: 85,
+    description: "5-minute chart trades",
+  },
+  {
+    timeframe: "M15",
+    accuracy: 65,
+    volume: 65,
+    description: "15-minute chart trades",
+  },
+  {
+    timeframe: "H1",
+    accuracy: 72,
+    volume: 45,
+    description: "1-hour chart trades",
+  },
+  {
+    timeframe: "H4",
+    accuracy: 78,
+    volume: 25,
+    description: "4-hour chart trades",
+  },
+  {
+    timeframe: "D1",
+    accuracy: 82,
+    volume: 15,
+    description: "Daily chart trades",
+  },
 ];
 
-// Updated color schemes with more distinct colors
-const lightThemeColors = [
-  "hsl(221, 83%, 53%)", // Bright blue
-  "hsl(142, 76%, 36%)", // Forest green
-  "hsl(346, 84%, 61%)", // Deep pink
-  "hsl(27, 96%, 61%)", // Bright orange
-  "hsl(271, 91%, 65%)", // Vibrant purple
-];
+// Professional color schemes with better contrast
+const lightThemeColors = {
+  primary: "hsl(221, 83%, 53%)",
+  success: "hsl(142, 76%, 36%)",
+  warning: "hsl(27, 96%, 61%)",
+  error: "hsl(346, 84%, 61%)",
+  info: "hsl(199, 89%, 48%)",
+  accent: "hsl(271, 91%, 65%)",
+  muted: "hsl(215, 16%, 47%)",
+};
 
-const darkThemeColors = [
-  "hsl(217, 91%, 60%)", // Lighter blue
-  "hsl(142, 71%, 45%)", // Bright green
-  "hsl(346, 89%, 70%)", // Light pink
-  "hsl(27, 96%, 67%)", // Light orange
-  "hsl(271, 81%, 70%)", // Light purple
-];
+const darkThemeColors = {
+  primary: "hsl(217, 91%, 60%)",
+  success: "hsl(142, 71%, 45%)",
+  warning: "hsl(27, 96%, 67%)",
+  error: "hsl(346, 89%, 70%)",
+  info: "hsl(199, 89%, 60%)",
+  accent: "hsl(271, 81%, 70%)",
+  muted: "hsl(215, 20%, 65%)",
+};
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, type }: any) => {
   const { theme } = useTheme();
+  const colors = theme === "dark" ? darkThemeColors : lightThemeColors;
 
   if (active && payload && payload.length) {
     return (
-      <div
-        className={`${
-          theme === "dark" ? "bg-slate-800" : "bg-white"
-        } border rounded-lg p-3 shadow-lg`}
-      >
-        <p className="font-medium mb-1">{label}</p>
+      <div className="bg-background/95 border rounded-lg p-3 shadow-lg backdrop-blur-sm">
+        <p className="font-semibold mb-2">{label}</p>
         {payload.map((pld: any, index: number) => (
           <p key={index} className="flex items-center gap-2 text-sm">
             <span
-              className="w-3 h-3 rounded-full inline-block"
+              className="w-2 h-2 rounded-full"
               style={{ backgroundColor: pld.color }}
             />
-            <span>{pld.name}: </span>
-            <span className="font-semibold">
-              {typeof pld.value === "number"
-                ? pld.name.toLowerCase().includes("rate") ||
-                  pld.name.toLowerCase().includes("return")
-                  ? `${pld.value}%`
-                  : pld.name.toLowerCase().includes("profit") ||
-                    pld.name.toLowerCase().includes("pnl")
-                  ? `$${pld.value}`
-                  : pld.value
+            <span className="text-muted-foreground">{pld.name}:</span>
+            <span className="font-medium">
+              {type === "currency"
+                ? `$${pld.value.toLocaleString()}`
+                : type === "percentage"
+                ? `${pld.value}%`
                 : pld.value}
             </span>
           </p>
@@ -158,492 +203,347 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const ChartHeader = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => (
+  <div className="flex items-center gap-2 mb-4">
+    <h3 className="font-medium">{title}</h3>
+    <HoverCard>
+      <HoverCardTrigger>
+        <Info className="h-4 w-4 text-muted-foreground" />
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80">
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </HoverCardContent>
+    </HoverCard>
+  </div>
+);
+
 export default function AnalyticsPage() {
   const { theme } = useTheme();
-  const chartColors = theme === "dark" ? darkThemeColors : lightThemeColors;
+  const colors = theme === "dark" ? darkThemeColors : lightThemeColors;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Analytics Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track your trading performance and insights
+          </p>
+        </div>
       </div>
 
+      {/* Key Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total P&L
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">+$12,300</div>
-            <p className="text-xs text-muted-foreground">
-              +15.8% from last month
-            </p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-green-100 dark:bg-green-900/20">
+                <div
+                  className="h-full rounded-full bg-green-600"
+                  style={{ width: "75%" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">
+                +15.8% from last month
+              </span>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Win Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">67.5%</div>
-            <p className="text-xs text-muted-foreground">199 trades total</p>
+            <div className="text-2xl font-bold text-primary">67.5%</div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-primary-100 dark:bg-primary-900/20">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: "67.5%" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">
+                199 trades total
+              </span>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Profit</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Avg. Profit
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$420</div>
-            <p className="text-xs text-muted-foreground">Per winning trade</p>
+            <div className="text-2xl font-bold text-green-600">$420</div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-green-100 dark:bg-green-900/20">
+                <div
+                  className="h-full rounded-full bg-green-600"
+                  style={{ width: "82%" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">
+                Per winning trade
+              </span>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Max Drawdown</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Max Drawdown
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">-$2,900</div>
-            <p className="text-xs text-muted-foreground">-2.6% from equity</p>
+            <div className="text-2xl font-bold text-red-500">-$2,900</div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-red-100 dark:bg-red-900/20">
+                <div
+                  className="h-full rounded-full bg-red-500"
+                  style={{ width: "35%" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">
+                -2.6% from equity
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="performance" className="space-y-4">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="strategies">Strategies</TabsTrigger>
-          <TabsTrigger value="allocation">Portfolio</TabsTrigger>
-        </TabsList>
+      {/* Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Equity Curve */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <ChartHeader
+              title="Equity Curve"
+              description="Shows your account balance progression over time, including profits, losses, and drawdowns."
+            />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={performanceData}>
+                  <defs>
+                    <linearGradient id="colorPnl" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor={colors.primary}
+                        stopOpacity={0.1}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={colors.primary}
+                        stopOpacity={0.0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted/20"
+                  />
+                  <XAxis
+                    dataKey="date"
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}%`}
+                  />
+                  <Tooltip
+                    content={(props) => (
+                      <CustomTooltip {...props} type="currency" />
+                    )}
+                  />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="equity"
+                    stroke={colors.primary}
+                    strokeWidth={2}
+                    fill="url(#colorPnl)"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="change"
+                    stroke={colors.success}
+                    strokeWidth={2}
+                    dot={{ fill: colors.success, strokeWidth: 2 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="performance" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Equity Curve</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={performanceData}>
-                      <defs>
-                        <linearGradient
-                          id="equityGradient"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor={chartColors[0]}
-                            stopOpacity={0.1}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor={chartColors[0]}
-                            stopOpacity={0.01}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.1)"
-                        }
-                        vertical={false}
-                      />
-                      <XAxis
-                        dataKey="date"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        yAxisId="left"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `$${value.toLocaleString()}`}
-                        domain={[90000, 120000]}
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `${value}%`}
-                        domain={[-5, 10]}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Area
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="equity"
-                        name="Account Balance"
-                        stroke={chartColors[0]}
-                        strokeWidth={2}
-                        fill="url(#equityGradient)"
-                        dot={{
-                          stroke: chartColors[0],
-                          strokeWidth: 2,
-                          fill: theme === "dark" ? "#1e1e1e" : "#ffffff",
-                          r: 4,
-                        }}
-                      />
-                      <Bar
-                        yAxisId="right"
-                        dataKey="change"
-                        name="Monthly Change %"
-                        fill={chartColors[1]}
-                        radius={[4, 4, 0, 0]}
-                        maxBarSize={40}
-                      >
-                        {performanceData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={
-                              entry.change >= 0
-                                ? chartColors[1]
-                                : theme === "dark"
-                                ? "hsl(0, 100%, 70%)"
-                                : "hsl(0, 90%, 50%)"
-                            }
-                            fillOpacity={0.7}
-                          />
-                        ))}
-                      </Bar>
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">
-                      Initial Balance
-                    </span>
-                    <span className="font-semibold">$100,000</span>
-                  </div>
-                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">
-                      Current Balance
-                    </span>
-                    <span className="font-semibold text-green-500">
-                      $112,300
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center p-2 rounded-lg bg-muted/50">
-                    <span className="text-muted-foreground">Max Drawdown</span>
-                    <span className="font-semibold text-red-500">-$2,900</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Strategy Performance */}
+        <Card>
+          <CardHeader>
+            <ChartHeader
+              title="Strategy Performance"
+              description="Compare the effectiveness of different trading strategies based on win rate and average profit."
+            />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={strategyData} barGap={8}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted/20"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="currentColor"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}%`}
+                  />
+                  <Tooltip
+                    content={(props) => (
+                      <CustomTooltip {...props} type="percentage" />
+                    )}
+                  />
+                  <Bar
+                    dataKey="winRate"
+                    fill={colors.primary}
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Timeframe Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={timeframePerformance}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.1)"
-                        }
+        {/* Asset Allocation */}
+        <Card>
+          <CardHeader>
+            <ChartHeader
+              title="Asset Allocation"
+              description="Distribution of your trading capital across different asset classes and their returns."
+            />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={assetAllocation}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {assetAllocation.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={Object.values(colors)[index]}
                       />
-                      <XAxis
-                        dataKey="timeframe"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <YAxis
-                        yAxisId="left"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                        domain={[0, 100]}
-                        label={{
-                          value: "Win Rate %",
-                          angle: -90,
-                          position: "insideLeft",
-                          offset: -5,
-                          style: {
-                            fill:
-                              theme === "dark"
-                                ? "rgba(255,255,255,0.7)"
-                                : "rgba(0,0,0,0.7)",
-                            fontSize: 12,
-                          },
-                        }}
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                        label={{
-                          value: "Number of Trades",
-                          angle: 90,
-                          position: "insideRight",
-                          offset: 5,
-                          style: {
-                            fill:
-                              theme === "dark"
-                                ? "rgba(255,255,255,0.7)"
-                                : "rgba(0,0,0,0.7)",
-                            fontSize: 12,
-                          },
-                        }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend verticalAlign="top" height={36} />
-                      <Bar
-                        yAxisId="right"
-                        dataKey="volume"
-                        name="Number of Trades"
-                        fill={chartColors[3]}
-                        fillOpacity={0.7}
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="accuracy"
-                        name="Win Rate %"
-                        stroke={chartColors[2]}
-                        strokeWidth={3}
-                        dot={{
-                          stroke: chartColors[2],
-                          strokeWidth: 2,
-                          fill: theme === "dark" ? "#1e1e1e" : "#ffffff",
-                          r: 4,
-                        }}
-                        activeDot={{
-                          stroke: chartColors[2],
-                          strokeWidth: 2,
-                          fill: chartColors[2],
-                          r: 6,
-                        }}
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    content={(props) => (
+                      <CustomTooltip {...props} type="percentage" />
+                    )}
+                  />
+                  <Legend
+                    verticalAlign="middle"
+                    align="right"
+                    layout="vertical"
+                    iconType="circle"
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="strategies" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Strategy Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={strategyData}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.1)"
-                        }
-                      />
-                      <XAxis
-                        dataKey="name"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <YAxis
-                        yAxisId="left"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar
-                        yAxisId="left"
-                        dataKey="winRate"
-                        fill={chartColors[0]}
-                        name="Win Rate %"
-                      />
-                      <Bar
-                        yAxisId="right"
-                        dataKey="avgProfit"
-                        fill={chartColors[1]}
-                        name="Avg Profit $"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk/Reward Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={strategyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar
-                        dataKey="trades"
-                        fill="hsl(var(--chart-3))"
-                        name="Number of Trades"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="riskReward"
-                        stroke="hsl(var(--chart-4))"
-                        name="Risk/Reward Ratio"
-                        strokeWidth={2}
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="allocation" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Asset Allocation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={assetAllocation}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {assetAllocation.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={chartColors[index % chartColors.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Asset Returns</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={assetAllocation} layout="vertical">
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.1)"
-                        }
-                      />
-                      <XAxis
-                        type="number"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <YAxis
-                        dataKey="name"
-                        type="category"
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(255,255,255,0.7)"
-                            : "rgba(0,0,0,0.7)"
-                        }
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar dataKey="return" name="Return %">
-                        {assetAllocation.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={chartColors[index % chartColors.length]}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+        {/* Timeframe Analysis */}
+        <Card className="col-span-2">
+          <CardHeader>
+            <ChartHeader
+              title="Timeframe Analysis"
+              description="Compare trading accuracy and volume across different timeframes to identify your most effective trading periods."
+            />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={timeframePerformance}>
+                  <PolarGrid className="stroke-muted/20" />
+                  <PolarAngleAxis
+                    dataKey="timeframe"
+                    stroke="currentColor"
+                    fontSize={12}
+                  />
+                  <PolarRadiusAxis
+                    angle={30}
+                    domain={[0, 100]}
+                    stroke="currentColor"
+                    fontSize={12}
+                  />
+                  <Radar
+                    name="Accuracy"
+                    dataKey="accuracy"
+                    stroke={colors.primary}
+                    fill={colors.primary}
+                    fillOpacity={0.2}
+                  />
+                  <Tooltip
+                    content={(props) => (
+                      <CustomTooltip {...props} type="percentage" />
+                    )}
+                  />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
