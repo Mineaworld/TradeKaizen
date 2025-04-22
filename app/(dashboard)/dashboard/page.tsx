@@ -15,8 +15,114 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowUpIcon, ArrowDownIcon, ActivityIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+// Account types and interfaces
+interface TradingAccount {
+  id: string;
+  name: string;
+  type: "funded" | "real";
+  balance: number;
+  availableBalance: number;
+  provider?: string;
+  phase?: number;
+  lastUpdated: string;
+}
+
+// Sample accounts data - Replace with API call
+const accounts: TradingAccount[] = [
+  {
+    id: "funded-1",
+    name: "FTMO Phase 2 $100K",
+    type: "funded",
+    balance: 105420,
+    availableBalance: 98650,
+    provider: "FTMO",
+    phase: 2,
+    lastUpdated: "2024-02-20",
+  },
+  {
+    id: "funded-2",
+    name: "TrueForex $50K",
+    type: "funded",
+    balance: 52450,
+    availableBalance: 37450,
+    provider: "TrueForex",
+    phase: 1,
+    lastUpdated: "2024-02-20",
+  },
+  {
+    id: "real-1",
+    name: "Personal Account",
+    type: "real",
+    balance: 25000,
+    availableBalance: 24850,
+    lastUpdated: "2024-02-20",
+  },
+];
+
+// Account Switcher Component
+function AccountSwitcher({
+  selectedAccount,
+  onAccountChange,
+}: {
+  selectedAccount: string;
+  onAccountChange: (accountId: string) => void;
+}) {
+  const { theme } = useTheme();
+  const colorMode = theme === "dark" ? colors.dark : colors.light;
+
+  return (
+    <div className="flex items-center gap-4">
+      <Select value={selectedAccount} onValueChange={onAccountChange}>
+        <SelectTrigger className="w-[300px]">
+          <SelectValue placeholder="Select account" />
+        </SelectTrigger>
+        <SelectContent>
+          <div className="mb-2 px-2 text-sm font-semibold text-muted-foreground">
+            Funded Accounts
+          </div>
+          {accounts
+            .filter((acc) => acc.type === "funded")
+            .map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{account.name}</span>
+                  <Badge variant="outline" style={{ color: colorMode.success }}>
+                    ${account.balance.toLocaleString()}
+                  </Badge>
+                </div>
+              </SelectItem>
+            ))}
+          <div className="my-2 px-2 text-sm font-semibold text-muted-foreground">
+            Real Accounts
+          </div>
+          {accounts
+            .filter((acc) => acc.type === "real")
+            .map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                <div className="flex items-center justify-between w-full">
+                  <span>{account.name}</span>
+                  <Badge variant="outline" style={{ color: colorMode.primary }}>
+                    ${account.balance.toLocaleString()}
+                  </Badge>
+                </div>
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 // Sample data - Replace with real data from your API
 const performanceData = [
@@ -281,13 +387,49 @@ function ChartComponent({ data, type, height = 300, title = "" }: ChartProps) {
 export default function DashboardPage() {
   const { theme } = useTheme();
   const colorMode = theme === "dark" ? colors.dark : colors.light;
+  const [selectedAccountId, setSelectedAccountId] = useState(accounts[0].id);
+
+  const selectedAccount =
+    accounts.find((acc) => acc.id === selectedAccountId) || accounts[0];
+
+  // Filter data based on selected account
+  const accountPerformanceData = performanceData; // TODO: Replace with account-specific data
+  const accountTradingActivity = tradingActivityData; // TODO: Replace with account-specific data
+  const accountRecentTrades = recentTrades; // TODO: Replace with account-specific data
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Trading Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, Trader</p>
+      {/* Header with Account Switcher */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Trading Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, Trader</p>
+          </div>
+          <AccountSwitcher
+            selectedAccount={selectedAccountId}
+            onAccountChange={setSelectedAccountId}
+          />
+        </div>
+        {selectedAccount.type === "funded" && (
+          <Card className="bg-muted/50">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-4">
+                <Badge variant="outline" className="text-sm">
+                  {selectedAccount.provider}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  Phase {selectedAccount.phase}
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  Last Updated: {selectedAccount.lastUpdated}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -362,9 +504,11 @@ export default function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: colorMode.primary }}
             >
-              $52,450
+              ${selectedAccount.balance.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">Available: $37,450</p>
+            <p className="text-xs text-muted-foreground">
+              Available: ${selectedAccount.availableBalance.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -378,7 +522,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[300px]">
               <ChartComponent
-                data={performanceData}
+                data={accountPerformanceData}
                 type="area"
                 title="Account Balance"
               />
@@ -393,7 +537,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[300px]">
               <ChartComponent
-                data={tradingActivityData}
+                data={accountTradingActivity}
                 type="bar"
                 title="Number of Trades"
               />
@@ -466,7 +610,7 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentTrades.map((trade) => (
+                  {accountRecentTrades.map((trade) => (
                     <TableRow key={trade.id}>
                       <TableCell className="font-medium">
                         {trade.pair}
