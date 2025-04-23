@@ -12,102 +12,101 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Home,
-  BarChart3,
-  BookOpen,
-  Menu,
-  Calendar,
-  FileText,
-  BookMarked,
-  StickyNote,
-  Settings,
-  LogIn,
-  UserPlus,
-  ChevronRight,
-} from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import {
+  MARKETING_NAV_ITEMS,
+  USER_NAV_ITEMS,
+  AUTH_NAV_ITEMS,
+} from "@/config/navigation";
+import { LucideIcon } from "lucide-react";
 
-const menuItems = [
-  {
-    name: "Home",
-    href: "#hero",
-    icon: Home,
-    description: "Return to the hero section",
-  },
-  {
-    name: "Journal",
-    href: "/journal",
-    icon: BookMarked,
-    description: "Track your trades and insights",
-  },
-  {
-    name: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-    description: "View your trading performance",
-  },
-];
+const BUTTON_STYLES = {
+  base: "flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors",
+  icon: "h-5 w-5 mb-1",
+  text: "text-xs font-medium",
+};
 
-const expandedMenuItems = [
-  {
-    name: "Calendar",
-    href: "/calendar",
-    icon: Calendar,
-    description: "View your trading schedule",
-  },
-  {
-    name: "Strategies",
-    href: "/strategies",
-    icon: FileText,
-    description: "Manage your trading strategies",
-  },
-  {
-    name: "Resources",
-    href: "/resources",
-    icon: BookOpen,
-    description: "Trading education resources",
-  },
-  {
-    name: "Notes",
-    href: "/notes",
-    icon: StickyNote,
-    description: "Your trading notes and ideas",
-  },
-  {
-    name: "Settings",
-    href: "/settings",
-    icon: Settings,
-    description: "Manage your account settings",
-  },
-];
-
-export function MobileNav() {
+/**
+ * MobileNav component - Mobile navigation for the application
+ * @returns JSX.Element
+ */
+export function MobileNav(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
 
   return (
     <>
-      {/* Mobile Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden border-t bg-background/80 backdrop-blur-lg z-50">
+      {/* Top Mobile Navigation Bar */}
+      <div
+        className="fixed top-0 left-0 right-0 md:hidden border-b bg-background/80 backdrop-blur-lg z-50"
+        role="navigation"
+        aria-label="Mobile navigation"
+      >
+        <div className="flex items-center justify-between px-4 h-14">
+          <Link
+            href="/"
+            className="flex items-center space-x-2"
+            aria-label="TradeKaizen Home"
+          >
+            <span className="font-bold text-xl">
+              <span className="text-primary">Trade</span>Kaizen
+            </span>
+          </Link>
+
+          <div className="flex items-center space-x-2">
+            {!user ? (
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  aria-label="Login to your account"
+                >
+                  <span>Login</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/dashboard">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  aria-label="Go to your dashboard"
+                >
+                  <span>Profile</span>
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Mobile Navigation Bar */}
+      <div
+        className="fixed bottom-0 left-0 right-0 md:hidden border-t bg-background/80 backdrop-blur-lg z-50"
+        role="navigation"
+        aria-label="Bottom navigation"
+      >
         <div className="grid grid-cols-4 gap-1 p-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
+          {USER_NAV_ITEMS.slice(0, 3).map((item) => {
+            const Icon = item.icon as LucideIcon;
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors",
+                  BUTTON_STYLES.base,
                   isActive
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
+                aria-label={item.description}
               >
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">{item.name}</span>
+                <Icon className={BUTTON_STYLES.icon} aria-hidden="true" />
+                <span className={BUTTON_STYLES.text}>{item.name}</span>
               </Link>
             );
           })}
@@ -118,10 +117,12 @@ export function MobileNav() {
               <Button
                 variant="ghost"
                 size="lg"
-                className="w-full h-full flex flex-col items-center justify-center py-2 px-1"
+                className={cn(BUTTON_STYLES.base, "w-full h-full")}
+                aria-label="Open menu"
+                aria-expanded={isOpen}
               >
-                <Menu className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">Menu</span>
+                <Menu className={BUTTON_STYLES.icon} aria-hidden="true" />
+                <span className={BUTTON_STYLES.text}>Menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:w-96 p-0">
@@ -131,28 +132,28 @@ export function MobileNav() {
                 </SheetTitle>
               </SheetHeader>
               <div className="py-2 overflow-y-auto max-h-[calc(100vh-8rem)]">
-                {/* Quick Access Menu Items */}
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                {/* Marketing Menu Items */}
+                {MARKETING_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon as LucideIcon;
                   return (
                     <Link
                       key={item.name}
                       href={item.href}
                       onClick={() => setIsOpen(false)}
-                      className={cn(
-                        "flex items-center px-4 py-3 hover:bg-accent transition-colors",
-                        isActive && "text-primary"
-                      )}
+                      className="flex items-center px-4 py-3 hover:bg-accent transition-colors"
+                      aria-label={item.description}
                     >
-                      <Icon className="h-5 w-5 mr-3" />
+                      <Icon className="h-5 w-5 mr-3" aria-hidden="true" />
                       <div className="flex-1">
                         <div className="font-medium">{item.name}</div>
                         <div className="text-xs text-muted-foreground">
                           {item.description}
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                     </Link>
                   );
                 })}
@@ -160,9 +161,9 @@ export function MobileNav() {
                 {/* Divider */}
                 <div className="h-px bg-border my-2" />
 
-                {/* Extended Menu Items */}
-                {expandedMenuItems.map((item) => {
-                  const Icon = item.icon;
+                {/* User Menu Items */}
+                {USER_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon as LucideIcon;
                   const isActive = pathname === item.href;
                   return (
                     <Link
@@ -173,15 +174,19 @@ export function MobileNav() {
                         "flex items-center px-4 py-3 hover:bg-accent transition-colors",
                         isActive && "text-primary"
                       )}
+                      aria-label={item.description}
                     >
-                      <Icon className="h-5 w-5 mr-3" />
+                      <Icon className="h-5 w-5 mr-3" aria-hidden="true" />
                       <div className="flex-1">
                         <div className="font-medium">{item.name}</div>
                         <div className="text-xs text-muted-foreground">
                           {item.description}
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight
+                        className="h-4 w-4 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                     </Link>
                   );
                 })}
@@ -191,18 +196,28 @@ export function MobileNav() {
               {!user && (
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-card">
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" asChild className="w-full">
-                      <Link href="/login" onClick={() => setIsOpen(false)}>
-                        <LogIn className="h-4 w-4 mr-2" />
-                        Login
-                      </Link>
-                    </Button>
-                    <Button asChild className="w-full">
-                      <Link href="/register" onClick={() => setIsOpen(false)}>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Sign Up
-                      </Link>
-                    </Button>
+                    {AUTH_NAV_ITEMS.map((item) => {
+                      const Icon = item.icon as LucideIcon;
+                      return (
+                        <Button
+                          key={item.name}
+                          variant={
+                            item.name === "Login" ? "outline" : "default"
+                          }
+                          asChild
+                          className="w-full"
+                        >
+                          <Link
+                            href={item.href}
+                            onClick={() => setIsOpen(false)}
+                            aria-label={item.description}
+                          >
+                            <Icon className="h-4 w-4 mr-2" aria-hidden="true" />
+                            {item.name}
+                          </Link>
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -211,8 +226,8 @@ export function MobileNav() {
         </div>
       </div>
 
-      {/* Spacer for content to not get hidden behind the navigation bar */}
-      <div className="h-[68px] md:h-0" />
+      {/* Spacer for content to not get hidden behind the navigation bars */}
+      <div className="h-[calc(68px+56px)] md:h-0" />
     </>
   );
 }

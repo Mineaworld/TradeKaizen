@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, User, LogIn, UserPlus, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import {
@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/auth-context";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -19,6 +20,8 @@ const navItems = [
 ];
 
 export function Nav() {
+  const { user } = useAuth();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4">
@@ -46,15 +49,43 @@ export function Nav() {
           {/* Desktop Right Section */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/register">Sign Up</Link>
-            </Button>
+            {!user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Account</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem asChild>
+                    <Link href="/login" className="flex items-center">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      <span>Login</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/register"
+                      className="flex items-center text-primary font-medium"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      <span>Create Account</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" size="sm" className="gap-2">
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Button>
+            )}
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center space-x-4">
             <ThemeToggle />
             <DropdownMenu>
@@ -74,23 +105,6 @@ export function Nav() {
                     </Link>
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/login"
-                    className="w-full cursor-pointer font-medium"
-                  >
-                    Login
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/register"
-                    className="w-full cursor-pointer font-medium text-blue-600"
-                  >
-                    Sign Up
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
