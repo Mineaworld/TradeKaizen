@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { JournalEntry } from "@/types/supabase";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Calendar, Filter, BarChart3, Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import JournalEntryList from "@/components/journal/journal-entry-list";
 import JournalEntryForm from "@/components/journal/journal-entry-form";
@@ -20,6 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function adaptFormDataToEntry(
   formData: any,
@@ -53,21 +63,27 @@ function adaptFormDataToEntry(
 export default function JournalPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">(
     "all"
   );
-  const [filters, setFilters] = useState({
-    direction: null as string | null,
-    outcome: null as string | null,
+  const [activeTab, setActiveTab] = useState<"entries" | "analytics">(
+    "entries"
+  );
+  const [filters, setFilters] = useState<{
+    direction: "long" | "short" | null;
+    outcome: "win" | "loss" | null;
+    pair: string;
+    dateRange: { from: Date | null; to: Date | null };
+  }>({
+    direction: null,
+    outcome: null,
     pair: "",
-    dateRange: {
-      from: undefined as Date | undefined,
-      to: undefined as Date | undefined,
-    },
+    dateRange: { from: null, to: null },
   });
   const { toast } = useToast();
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   // Redirect if not authenticated
@@ -90,27 +106,24 @@ export default function JournalPage() {
     }
   }, [filters]);
 
-  // Filter entries based on timeframe
-  const filteredEntries = useMemo(() => {
-    if (timeframe === "all") return entries;
+  // Calculate filtered entries based on current filters
+  const filteredEntries = entries.filter((entry) => {
+    if (filters.direction && entry.trade_direction !== filters.direction)
+      return false;
+    if (filters.outcome && entry.trade_outcome !== filters.outcome)
+      return false;
+    if (
+      filters.pair &&
+      !entry.trade_pair?.toLowerCase().includes(filters.pair.toLowerCase())
+    )
+      return false;
 
-    const now = new Date();
-    const cutoffDate = new Date();
-
-    switch (timeframe) {
-      case "week":
-        cutoffDate.setDate(now.getDate() - 7);
-        break;
-      case "month":
-        cutoffDate.setMonth(now.getMonth() - 1);
-        break;
-      case "year":
-        cutoffDate.setFullYear(now.getFullYear() - 1);
-        break;
-    }
-
-    return entries.filter((entry) => new Date(entry.trade_date) >= cutoffDate);
-  }, [entries, timeframe]);
+    const entryDate = new Date(entry.trade_date);
+    if (filters.dateRange.from && entryDate < filters.dateRange.from)
+      return false;
+    if (filters.dateRange.to && entryDate > filters.dateRange.to) return false;
+    return true;
+  });
 
   async function fetchJournalEntries() {
     if (!user) return;
@@ -349,55 +362,205 @@ export default function JournalPage() {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto py-6 space-y-8">
+        <Skeleton className="h-10 w-1/4 mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Trading Journal</h1>
-        <div className="flex gap-2">
-          <Button onClick={createSampleEntry} variant="outline">
-            Add Sample Entry
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="container mx-auto py-6 space-y-8"
+    >
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Trading Journal</h1>
+          <p className="text-muted-foreground mt-1">
+            Track and analyze your trading performance
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={createSampleEntry}
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Sample Entry
           </Button>
-          <Button asChild>
-            <Link href="/journal/new" className="flex items-center gap-2">
-              <PlusIcon className="w-4 h-4" /> New Entry
+          <Button asChild className="gap-2">
+            <Link href="/journal/new">
+              <PlusIcon className="w-4 h-4" />
+              New Entry
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <JournalFilters onApplyFilters={handleApplyFilters} />
-          <Select
-            value={timeframe}
-            onValueChange={(value: "week" | "month" | "year" | "all") =>
-              setTimeframe(value)
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select timeframe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="week">Last Week</SelectItem>
-              <SelectItem value="month">Last Month</SelectItem>
-              <SelectItem value="year">Last Year</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Quick Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Card className="p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Trades
+              </p>
+              <h3 className="text-2xl font-bold mt-1">
+                {filteredEntries.length}
+              </h3>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-primary" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total number of trades in the selected period</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </Card>
+        <Card className="p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Win Rate
+              </p>
+              <h3 className="text-2xl font-bold mt-1">
+                {filteredEntries.length > 0
+                  ? `${Math.round(
+                      (filteredEntries.filter(
+                        (e) => e.trade_outcome === "profit"
+                      ).length /
+                        filteredEntries.length) *
+                        100
+                    )}%`
+                  : "0%"}
+              </h3>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <Calendar className="w-6 h-6 text-primary" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Percentage of profitable trades</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </Card>
+        <Card className="p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total P/L
+              </p>
+              <h3 className="text-2xl font-bold mt-1">
+                $
+                {filteredEntries
+                  .reduce((sum, entry) => sum + (entry.profit_loss || 0), 0)
+                  .toLocaleString()}
+              </h3>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <Filter className="w-6 h-6 text-primary" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total profit/loss across all trades</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </Card>
+      </div>
+
+      {/* Tabs Section */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) =>
+          setActiveTab(value as "entries" | "analytics")
+        }
+        className="w-full"
+      >
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="entries">Trade Entries</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Select
+              value={timeframe}
+              onValueChange={(value: "week" | "month" | "year" | "all") =>
+                setTimeframe(value)
+              }
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Last Week</SelectItem>
+                <SelectItem value="month">Last Month</SelectItem>
+                <SelectItem value="year">Last Year</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setFilters({
+                  direction: null,
+                  outcome: null,
+                  pair: "",
+                  dateRange: { from: null, to: null },
+                })
+              }
+              className="w-full sm:w-auto"
+            >
+              Clear Filters
+            </Button>
+          </div>
         </div>
 
-        <TradeStatistics entries={filteredEntries} timeframe={timeframe} />
+        <TabsContent value="entries" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <JournalFilters onApplyFilters={handleApplyFilters} />
+            <div className="text-sm text-muted-foreground">
+              Showing {filteredEntries.length} of {entries.length} entries
+            </div>
+          </div>
+          <JournalEntryList
+            entries={filteredEntries}
+            loading={loading}
+            onEdit={setEditingEntry}
+            onDelete={deleteEntry}
+          />
+        </TabsContent>
 
-        <JournalEntryList
-          entries={filteredEntries}
-          loading={loading}
-          onEdit={setEditingEntry}
-          onDelete={deleteEntry}
-        />
-      </div>
-    </div>
+        <TabsContent value="analytics">
+          <TradeStatistics entries={filteredEntries} timeframe={timeframe} />
+        </TabsContent>
+      </Tabs>
+    </motion.div>
   );
 }
