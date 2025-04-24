@@ -108,17 +108,16 @@ export function DashboardSidebar() {
         </nav>
       </div>
       <div className="border-t p-4 space-y-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2"
-          asChild
-        >
-          <Link href="/settings">
+        <Link href="/settings" onClick={() => setIsOpen(false)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2"
+          >
             <Settings className="h-4 w-4" />
             Settings
-          </Link>
-        </Button>
+          </Button>
+        </Link>
 
         <Button
           variant="ghost"
