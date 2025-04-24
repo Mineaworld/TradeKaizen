@@ -132,87 +132,100 @@ export default function Hero() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl overflow-hidden">
+              <div className="relative w-full min-h-[600px] sm:aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl overflow-y-auto">
                 {/* Glass effect overlay */}
                 <div className="absolute inset-0 backdrop-blur-[2px]" />
 
                 {/* Dashboard Preview Content */}
                 <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8">
                   {/* Stats Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4">
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm text-muted-foreground mb-1">
+                      <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                         Total P&L
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-green-500">
+                      <div className="text-sm sm:text-lg lg:text-xl font-bold text-green-500">
                         +$12,307
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                         +15.8% from last month
                       </div>
                     </div>
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm text-muted-foreground mb-1">
+                      <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                         Win Rate
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-primary">
+                      <div className="text-sm sm:text-lg lg:text-xl font-bold text-primary">
                         69%
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                         199 trades total
                       </div>
                     </div>
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm text-muted-foreground mb-1">
+                      <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                         Avg. Profit
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-green-500">
+                      <div className="text-sm sm:text-lg lg:text-xl font-bold text-green-500">
                         $420
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                         Per winning trade
                       </div>
                     </div>
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm text-muted-foreground mb-1">
+                      <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                         Drawdown
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-red-500">
+                      <div className="text-sm sm:text-lg lg:text-xl font-bold text-red-500">
                         -$2,900
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">
                         -2.6% from equity
                       </div>
                     </div>
                   </div>
 
                   {/* Charts Section */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
-                    <div className="bg-background/80 dark:bg-card/80 p-4 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm font-medium mb-4 text-foreground flex items-center justify-between">
+                  <div className="grid grid-cols-1 gap-4 mt-4">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 text-foreground flex items-center justify-between">
                         <span>Strategy Performance</span>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       </div>
-                      <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={strategyData} barGap={8}>
+                      <div className="h-[250px] w-full">
+                        <ResponsiveContainer
+                          width="100%"
+                          height="100%"
+                          debounce={1}
+                        >
+                          <BarChart
+                            data={strategyData}
+                            barGap={4}
+                            margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
+                          >
                             <CartesianGrid
                               strokeDasharray="3 3"
                               className="stroke-muted/20"
+                              horizontal={true}
+                              vertical={false}
                             />
                             <XAxis
                               dataKey="name"
                               stroke="currentColor"
-                              fontSize={12}
+                              fontSize={10}
                               tickLine={false}
                               axisLine={false}
+                              interval={0}
+                              tick={{ fontSize: 9 }}
                             />
                             <YAxis
                               stroke="currentColor"
-                              fontSize={12}
+                              fontSize={10}
                               tickLine={false}
                               axisLine={false}
                               tickFormatter={(value) => `${value}%`}
+                              tick={{ fontSize: 9 }}
                             />
                             <Tooltip
                               content={(props) => (
@@ -224,19 +237,27 @@ export default function Hero() {
                               fill="currentColor"
                               className="fill-primary/80"
                               radius={[4, 4, 0, 0]}
+                              maxBarSize={40}
                             />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="bg-background/80 dark:bg-card/80 p-4 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-sm font-medium mb-4 text-foreground flex items-center justify-between">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 text-foreground flex items-center justify-between">
                         <span>Risk/Reward Ratio</span>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       </div>
-                      <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={riskRewardData}>
+                      <div className="h-[250px] w-full">
+                        <ResponsiveContainer
+                          width="100%"
+                          height="100%"
+                          debounce={1}
+                        >
+                          <AreaChart
+                            data={riskRewardData}
+                            margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
+                          >
                             <defs>
                               <linearGradient
                                 id="colorRatio"
@@ -262,20 +283,25 @@ export default function Hero() {
                             <CartesianGrid
                               strokeDasharray="3 3"
                               className="stroke-muted/20"
+                              horizontal={true}
+                              vertical={false}
                             />
                             <XAxis
                               dataKey="name"
                               stroke="currentColor"
-                              fontSize={12}
+                              fontSize={10}
                               tickLine={false}
                               axisLine={false}
+                              interval={0}
+                              tick={{ fontSize: 9 }}
                             />
                             <YAxis
                               stroke="currentColor"
-                              fontSize={12}
+                              fontSize={10}
                               tickLine={false}
                               axisLine={false}
                               tickFormatter={(value) => `${value}:1`}
+                              tick={{ fontSize: 9 }}
                             />
                             <Tooltip
                               content={(props) => (
