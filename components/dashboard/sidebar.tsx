@@ -154,23 +154,32 @@ export function DashboardSidebar() {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center border-b bg-background px-4 lg:hidden">
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
-            <SidebarContent />
-          </SheetContent>
-        </Sheet>
-        <div className="mx-auto">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <Home className="h-5 w-5" />
-            <span>TradeKaizen</span>
-          </Link>
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b bg-background px-4 lg:hidden">
+        <div className="flex items-center gap-3">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-64 p-0 border-r motion-safe:transition-transform motion-safe:duration-200"
+            >
+              <div className="flex h-full flex-col">
+                <SidebarContent />
+              </div>
+            </SheetContent>
+          </Sheet>
+          <span className="font-medium">
+            {sidebarLinks.find((link) => link.href === pathname)?.title ||
+              "Dashboard"}
+          </span>
         </div>
+        <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Home className="h-5 w-5" />
+          <span>TradeKaizen</span>
+        </Link>
       </div>
 
       {/* Desktop Sidebar */}
