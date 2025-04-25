@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp } from "lucide-react";
+import { BarChart3, TrendingUp, ArrowUpRight, ChevronUp } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -132,14 +132,14 @@ export default function Hero() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="relative w-full min-h-[600px] sm:aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl overflow-y-auto">
+              <div className="relative w-full min-h-[480px] sm:aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl">
                 {/* Glass effect overlay */}
                 <div className="absolute inset-0 backdrop-blur-[2px]" />
 
                 {/* Dashboard Preview Content */}
                 <div className="relative z-10 p-4 sm:p-5 md:p-6 lg:p-8">
                   {/* Stats Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
                     <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
                       <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                         Total P&L
@@ -187,18 +187,14 @@ export default function Hero() {
                   </div>
 
                   {/* Charts Section */}
-                  <div className="grid grid-cols-1 gap-4 mt-4">
-                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 text-foreground flex items-center justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-xs sm:text-sm font-medium mb-3 text-foreground flex items-center justify-between">
                         <span>Strategy Performance</span>
                         <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       </div>
-                      <div className="h-[250px] w-full">
-                        <ResponsiveContainer
-                          width="100%"
-                          height="100%"
-                          debounce={1}
-                        >
+                      <div className="h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
                           <BarChart
                             data={strategyData}
                             barGap={4}
@@ -243,17 +239,13 @@ export default function Hero() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-5 rounded-lg border shadow-sm backdrop-blur-sm">
-                      <div className="text-xs sm:text-sm font-medium mb-3 sm:mb-4 text-foreground flex items-center justify-between">
+                    <div className="bg-background/80 dark:bg-card/80 p-3 sm:p-4 rounded-lg border shadow-sm backdrop-blur-sm">
+                      <div className="text-xs sm:text-sm font-medium mb-3 text-foreground flex items-center justify-between">
                         <span>Risk/Reward Ratio</span>
                         <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       </div>
-                      <div className="h-[250px] w-full">
-                        <ResponsiveContainer
-                          width="100%"
-                          height="100%"
-                          debounce={1}
-                        >
+                      <div className="h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
                             data={riskRewardData}
                             margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
@@ -323,6 +315,53 @@ export default function Hero() {
                   </div>
                 </div>
               </div>
+
+              {/* Floating Stats */}
+              <motion.div
+                className="absolute -top-12 -left-8 z-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <div className="bg-white dark:bg-card/40 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-primary/10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-[#3B82F6]/10 rounded-full">
+                      <ArrowUpRight className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-[#3B82F6]">
+                        +$12,450
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Total Profit
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="absolute -bottom-12 -right-8 z-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <div className="bg-white dark:bg-card/40 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-primary/10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-[#3B82F6]/10 rounded-full">
+                      <ChevronUp className="h-4 w-4 text-[#3B82F6]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-[#3B82F6]">
+                        68%
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Win Rate
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
