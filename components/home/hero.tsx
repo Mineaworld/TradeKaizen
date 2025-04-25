@@ -96,9 +96,9 @@ export default function Hero() {
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
-                  TradeKaizen is your all-in-one trading journal platform,
-                  crafted to empower you in analyzing patterns, tracking
-                  performance, and refining your trading strategies.
+                  TradeKaizen is your all-in-one trading journal platform.{" "}
+                  <br /> Turn your trades into a repeatable edge. Ditch the
+                  randomness, build your trading legacy
                 </p>
               </motion.div>
               <motion.div
@@ -112,7 +112,7 @@ export default function Hero() {
                   size="lg"
                   className="w-full sm:w-auto text-base font-medium bg-primary hover:bg-primary/90"
                 >
-                  <Link href="/register">Get Started for Free</Link>
+                  <Link href="/register">Start Journaling Free</Link>
                 </Button>
                 <Button
                   asChild
@@ -120,7 +120,7 @@ export default function Hero() {
                   size="lg"
                   className="w-full sm:w-auto text-base font-medium border-primary/20 hover:bg-primary/10"
                 >
-                  <Link href="#features">Explore Analytics</Link>
+                  <Link href="#features">Explore Demo First</Link>
                 </Button>
               </motion.div>
             </div>

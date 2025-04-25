@@ -22,7 +22,8 @@ export default function CallToAction() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            No credit card required. Free 7-day trial on all paid plans.
+            Join hundreds of traders before this week ends — get 7-days free, no
+            card needed.
           </p>
         </div>
       </div>

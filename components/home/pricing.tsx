@@ -33,7 +33,7 @@ const plans = [
       "Priority email support",
       "Advanced trade templates",
     ],
-    cta: "Start 14-Day Free Trial",
+    cta: "Start 7-days Free Trial",
     popular: true,
     highlight: "Save 50% - Limited Time",
     savings: "$120/year",
