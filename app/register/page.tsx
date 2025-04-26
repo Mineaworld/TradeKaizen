@@ -67,7 +67,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 p-3 rounded-xl">
-            <BarChart className="w-8 h-8 text-primary" />
+            <Link href="/home">
+              <BarChart className="w-8 h-8 text-primary" />
+            </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
             Create your TradeKaizen account
