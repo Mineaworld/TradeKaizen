@@ -3,24 +3,24 @@ import Image from "next/image";
 const testimonials = [
   {
     quote:
-      "TradeKaizen has transformed my approach to trading. The analytics enable me to better track my performance, and my win rate has improved by 25% since I started using it.",
-    author: "TJR",
-    role: "Millionaire Trader",
-    avatar: "/images/avatars/tjr.jpg",
+      "Before TradeKaizen, my trading was all over the place. But with its powerful insights and real-time analytics, I fine-tuned my strategy. Now, I’m hitting 10% higher win rates and seeing real progress – it’s the change I needed!",
+    author: "Jason Turner",
+    role: "Senior Forex Trader & Investor",
+    avatar: "/images/avatars/U1.png",
   },
   {
     quote:
-      "The ability to track my emotional state alongside trade performance is game-changing. I've identified patterns in my trading that were holding me back.",
-    author: "ZENN28",
-    role: "Profitable Trader, +4 years experience",
-    avatar: "/images/avatars/Zen.jpg",
+      "I’ve been mentoring traders for years, and I can confidently say that TradeKaizen is a game-changer. The analytics and strategy testing tools are exactly what every serious trader needs to level up their game. I recommend it to all my students.",
+    author: "Zane Edwards",
+    role: "Professional Trader & Mentor",
+    avatar: "/images/avatars/U2.png",
   },
   {
     quote:
-      "As a trading coach, I recommend TradeKaizen to all my students. The detailed analytics and strategy testing tools are invaluable for improving trading results.",
+      "Tracking both my trades and emotions with TradeKaizen has unlocked a whole new level of consistency in my trading. I’ve discovered patterns I didn’t even know were there, and now I’m more focused and successful than ever.",
     author: "Umar Ashraf",
-    role: "Professional Trader & Coach",
-    avatar: "/images/avatars/UmarAshraf.jpg",
+    role: "Day Trader, 5+ years in Forex & Crypto",
+    avatar: "/images/avatars/U3.png",
   },
 ];
 
@@ -48,12 +48,12 @@ export default function Testimonials() {
                   <p className="text-lg mb-6 italic">{testimonial.quote}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden">
                     <Image
                       src={testimonial.avatar}
                       alt={testimonial.author}
                       fill
-                      className="object-cover"
+                      className=" h-[200px] w-[200px] object-cover"
                     />
                   </div>
                   <div>
