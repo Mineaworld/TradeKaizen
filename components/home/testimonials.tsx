@@ -18,7 +18,7 @@ const testimonials = [
   {
     quote:
       "Tracking both my trades and emotions with TradeKaizen has unlocked a whole new level of consistency in my trading. I’ve discovered patterns I didn’t even know were there, and now I’m more focused and successful than ever.",
-    author: "Umar Ashraf",
+    author: "Aryan Patel",
     role: "Day Trader, 5+ years in Forex & Crypto",
     avatar: "/images/avatars/U3.png",
   },
