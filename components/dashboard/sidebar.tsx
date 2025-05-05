@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/auth-context";
 
 const sidebarLinks = [
   {
@@ -66,10 +67,11 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    // TODO: Implement logout functionality
-    console.log("Logout clicked");
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = "/";
   };
 
   const SidebarContent = () => (

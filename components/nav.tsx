@@ -20,7 +20,7 @@ const navItems = [
 ];
 
 export function Nav() {
-  const { user } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -49,7 +49,7 @@ export function Nav() {
           {/* Desktop Right Section */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            {!user ? (
+            {isLoading ? null : !user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2">
@@ -78,10 +78,34 @@ export function Nav() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await signOut();
+                      window.location.href = "/";
+                    }}
+                    className="flex items-center text-destructive"
+                  >
+                    <LogIn className="h-4 w-4 mr-2 rotate-180" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
 
