@@ -2,8 +2,18 @@
 
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
+
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/journal",
+  "/analytics",
+  "/calendar",
+  "/strategies",
+  "/resources",
+  "/notes",
+];
 
 export default function DashboardLayout({
   children,
@@ -12,12 +22,21 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace("/login?redirectTo=/dashboard");
+    // Prevent redirect to login if logging out
+    if (typeof window !== 'undefined' && localStorage.getItem('tk-logging-out')) {
+      localStorage.removeItem('tk-logging-out');
+      return;
     }
-  }, [user, isLoading, router]);
+    if (!isLoading && !user) {
+      // Only redirect to login if still on a protected route
+      if (PROTECTED_PATHS.some((p) => pathname.startsWith(p))) {
+        router.replace("/login?redirectTo=" + encodeURIComponent(pathname));
+      }
+    }
+  }, [user, isLoading, router, pathname]);
 
   if (isLoading) {
     return (

@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -68,10 +68,12 @@ export function DashboardSidebar() {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
+  const router = useRouter();
 
   const handleLogout = async () => {
+    localStorage.setItem('tk-logging-out', '1');
     await signOut();
-    window.location.href = "/";
+    router.replace("/");
   };
 
   const SidebarContent = () => (

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -21,6 +22,7 @@ const navItems = [
 
 export function Nav() {
   const { user, signOut, isLoading } = useAuth();
+  const router = useRouter();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -96,8 +98,9 @@ export function Nav() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={async () => {
+                      localStorage.setItem('tk-logging-out', '1');
                       await signOut();
-                      window.location.href = "/";
+                      router.replace("/");
                     }}
                     className="flex items-center text-destructive"
                   >
