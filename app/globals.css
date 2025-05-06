@@ -111,3 +111,12 @@ body:has([data-radix-dropdown-menu][data-state="open"]) {
     margin-left: 70px;
   }
 }
+
+.select-trigger {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background: none;
+  border: none;
+  box-shadow: none;
+}

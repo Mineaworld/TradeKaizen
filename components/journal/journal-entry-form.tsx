@@ -12,6 +12,11 @@ import {
   ArrowDown,
   Loader2,
   ImageIcon,
+  ChevronDown,
+  Plus,
+  BarChart2,
+  Trash2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form as FormRoot } from "@/components/ui/form"; // Add this import
@@ -61,6 +66,10 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
+import { useAccounts, TradingAccount } from "../../app/hooks/useAccounts";
+import { ALL_TRADING_PAIRS } from "@/lib/constants";
+import { useAuth } from "@/contexts/auth-context";
+import * as SelectPrimitive from "@radix-ui/react-select";
 
 interface JournalEntryFormProps {
   onSubmit: (data: any) => void;
@@ -140,6 +149,21 @@ const SortableImageItem = ({
   );
 };
 
+const SESSION_OPTIONS = [
+  { value: "Asian", label: "Asian Session" },
+  { value: "London", label: "London Session" },
+  { value: "New York", label: "New York Session" },
+];
+const OUTCOME_OPTIONS = [
+  { value: "WIN", label: "Profit" },
+  { value: "LOSS", label: "Loss" },
+  { value: "BREAKEVEN", label: "Breakeven" },
+];
+
+const DEFAULT_PAIRS = [
+  "NQ", "XAU", "EUR/USD", "BTC/USD", "SPX", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "USD/CHF", "NZD/USD"
+];
+
 export default function JournalEntryForm({
   onSubmit,
   onCancel,
@@ -150,9 +174,17 @@ export default function JournalEntryForm({
     Array<{ url: string; file: File; id: string }>
   >([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [tradingPairs, setTradingPairs] = useState<string[]>([]);
+  const { user } = useAuth();
+  const [tradingPairs, setTradingPairs] = useState<string[]>([
+    "NQ", "XAU", "EUR/USD", "BTC/USD", "SPX", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "USD/CHF", "NZD/USD"
+  ]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [emotions, setEmotions] = useState<string[]>(["Excited", "Anxious", "Confident", "Fearful", "Frustrated", "Calm"]);
+  const [customPairInput, setCustomPairInput] = useState("");
+  const [isAddingPair, setIsAddingPair] = useState(false);
+  const [pairSearch, setPairSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -176,6 +208,16 @@ export default function JournalEntryForm({
       strategy_id: defaultValues?.strategy_id || "",
       trading_pair: defaultValues?.trading_pair || "",
       chart_images: defaultValues?.chart_images || [],
+      account_id: defaultValues?.account_id || "",
+      session: defaultValues?.session || "",
+      commission_fees: defaultValues?.commission_fees || "",
+      risk_reward_ratio: defaultValues?.risk_reward_ratio || "",
+      gross_pnl: defaultValues?.gross_pnl || "",
+      trade_outcome: defaultValues?.trade_outcome || "",
+      emotion: defaultValues?.emotion || "",
+      emotion_reason: defaultValues?.emotion_reason || "",
+      photos: defaultValues?.photos || [],
+      net_pnl: defaultValues?.net_pnl || "",
     },
   });
 
@@ -208,6 +250,22 @@ export default function JournalEntryForm({
     }
     fetchTradingPairs();
   }, []);
+
+  // Fetch custom pairs for the user
+  useEffect(() => {
+    const fetchCustomPairs = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("custom_trading_pairs")
+        .select("pair")
+        .eq("user_id", user.id);
+      if (!error && data) {
+        const customPairs = data.map((item: any) => item.pair).filter(Boolean);
+        setTradingPairs((prev) => Array.from(new Set([...prev, ...customPairs])));
+      }
+    };
+    fetchCustomPairs();
+  }, [user]);
 
   // Handle image upload with improved error handling
   const onDrop = async (acceptedFiles: File[]) => {
@@ -317,6 +375,17 @@ export default function JournalEntryForm({
 
   // Handle form submission
   const handleSubmit = (data: any) => {
+    // Calculate net PnL if possible
+    let netPnl = 0;
+    // If user provided gross_pnl, use it for net_pnl calculation
+    if (data.gross_pnl !== "" && !isNaN(Number(data.gross_pnl))) {
+      const gross = parseFloat(data.gross_pnl);
+      const commission = data.commission_fees !== "" && !isNaN(Number(data.commission_fees)) ? parseFloat(data.commission_fees) : 0;
+      netPnl = gross - commission;
+    } else if (data.exit_price && data.entry_price && data.position_size && data.trade_direction) {
+      netPnl = (parseFloat(data.exit_price) - parseFloat(data.entry_price)) * parseFloat(data.position_size) * (data.trade_direction === "LONG" ? 1 : -1);
+    }
+    data.net_pnl = netPnl;
     onSubmit(data);
   };
 
@@ -327,52 +396,104 @@ export default function JournalEntryForm({
     }
   };
 
+  // Fetch emotions
+  useEffect(() => {
+    async function fetchEmotions() {
+      try {
+        const { data, error } = await supabase.from("emotions").select("name");
+        if (!error && data) {
+          setEmotions(data.map((e: any) => e.name));
+        }
+      } catch (e) { /* fallback to static */ }
+    }
+    fetchEmotions();
+  }, []);
+
+  // Fetch accounts for dropdown
+  const { accounts, loading: accountsLoading, error: accountsError } = useAccounts();
+
+  // Live Net PnL calculation
+  useEffect(() => {
+    const gross = form.watch("gross_pnl");
+    const commission = form.watch("commission_fees");
+    const entry = form.watch("entry_price");
+    const exit = form.watch("exit_price");
+    const size = form.watch("position_size");
+    const direction = form.watch("trade_direction");
+
+    let netPnl = 0;
+    if (gross !== "" && !isNaN(Number(gross))) {
+      netPnl = parseFloat(gross) - (commission !== "" && !isNaN(Number(commission)) ? parseFloat(commission) : 0);
+    } else if (exit && entry && size && direction) {
+      netPnl = (parseFloat(exit) - parseFloat(entry)) * parseFloat(size) * (direction === "LONG" ? 1 : -1);
+      if (commission !== "" && !isNaN(Number(commission))) {
+        netPnl -= parseFloat(commission);
+      }
+    }
+    // Only update if value actually changed to avoid infinite loop
+    if (form.getValues("net_pnl") !== netPnl) {
+      form.setValue("net_pnl", netPnl);
+    }
+  }, [form.watch("gross_pnl"), form.watch("commission_fees"), form.watch("entry_price"), form.watch("exit_price"), form.watch("position_size"), form.watch("trade_direction")]);
+
+  // Add custom pair handler
+  const handleAddCustomPair = async () => {
+    if (!user || !customPairInput.trim()) return;
+    const newPair = customPairInput.trim().toUpperCase();
+    if (!tradingPairs.includes(newPair)) {
+      setTradingPairs((prev) => [...prev, newPair]);
+      setIsAddingPair(false);
+      setCustomPairInput("");
+      // Save to DB
+      await supabase.from("custom_trading_pairs").insert({ pair: newPair, user_id: user.id });
+    }
+  };
+
+  // Helper to check if custom pair already exists (case-insensitive)
+  const customPairExists = tradingPairs.some(
+    (pair) => pair.toLowerCase() === customPairInput.trim().toLowerCase()
+  );
+
   return (
     <FormRoot {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Title */}
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Entry title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Entry Date */}
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className={
+          `relative bg-background rounded-xl shadow-xl p-6 max-h-[80vh] w-full flex flex-col gap-6 ` +
+          (dropdownOpen ? 'overflow-hidden' : 'overflow-y-auto')
+        }
+      >
+        <h2 className="text-2xl font-bold mb-2 text-center">
+          {defaultValues && defaultValues.id ? "Edit Journal Entry" : "New Journal Entry"}
+        </h2>
+        {/* Trade Details Section */}
+        <h3 className="text-lg font-semibold mt-2 mb-1">Trade Details</h3>
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Date (40%) */}
+          <div className="md:w-2/5 w-full">
           <FormField
             control={form.control}
             name="entry_date"
+              rules={{ required: "Date is required" }}
             render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Date</FormLabel>
+                <FormItem>
+                  <FormLabel>Date <span className="text-red-500">*</span></FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant="outline"
+                          variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          {field.value ? format(field.value, "yyyy-MM-dd") : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="max-h-[90vh] overflow-y-auto flex flex-col justify-center items-center">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -385,38 +506,197 @@ export default function JournalEntryForm({
               </FormItem>
             )}
           />
-
-          {/* Strategy - With proper error handling */}
+          </div>
+          {/* Entry Price (30%) */}
+          <div className="md:w-3/10 w-full">
+            <FormField
+              control={form.control}
+              name="entry_price"
+              rules={{ required: "Entry price is required" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Entry Price <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Entry price" type="number" step="any" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          {/* Exit Price (30%) */}
+          <div className="md:w-3/10 w-full">
+            <FormField
+              control={form.control}
+              name="exit_price"
+              rules={{ required: "Exit price is required" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Exit Price <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Exit price" type="number" step="any" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        {/* Position Size and Trading Pair row (as before) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {/* Position Size */}
           <FormField
             control={form.control}
-            name="strategy_id"
+            name="position_size"
+            rules={{ required: "Position size is required" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Strategy</FormLabel>
+                <FormLabel>Position Size <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="Position size" type="number" step="any" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Trading Pair */}
+          <FormField
+            control={form.control}
+            name="trading_pair"
+            rules={{ required: "Trading pair is required" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Trading Pair <span className="text-red-500">*</span></FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  open={dropdownOpen}
+                  onOpenChange={setDropdownOpen}
                 >
                   <FormControl>
+                    <SelectTrigger className="w-full border rounded-md flex items-center justify-between px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none appearance-none">
+                      <SelectValue placeholder="Select trading pair" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent
+                    className="shadow-xl border rounded-lg max-h-72 overflow-y-auto w-[var(--radix-select-trigger-width)] mt-1 bg-white"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    style={{ minWidth: 0 }}
+                  >
+                    <div className="max-h-72 overflow-y-auto">
+                      {/* Sticky header */}
+                      <div className="sticky top-0 z-30 bg-white border-b px-3 py-2 text-xs font-semibold text-muted-foreground select-none">
+                        Trading Pairs
+                      </div>
+                      {/* Search bar */}
+                      <div className="p-2 border-b">
+                        <input
+                          type="text"
+                          value={pairSearch}
+                          onChange={e => setPairSearch(e.target.value)}
+                          placeholder="Search pairs..."
+                          className="w-full px-2 py-1 border rounded text-xs"
+                          autoFocus
+                        />
+                      </div>
+                      {/* List of pairs */}
+                      {tradingPairs.filter(pair => pair.toLowerCase().includes(pairSearch.toLowerCase())).map((pair) => {
+                        const isCustom = !DEFAULT_PAIRS.includes(pair);
+                        return (
+                          <SelectItem
+                            key={pair}
+                            value={pair}
+                            className="group flex items-center gap-2 px-4 py-2 rounded cursor-pointer focus:bg-accent focus:text-accent-foreground transition-colors duration-150 hover:bg-accent/60 relative"
+                          >
+                            <BarChart2 className="w-4 h-4 text-muted-foreground" />
+                            <span className="flex-1 text-left">{pair}</span>
+                            {/* Checkmark absolutely right-aligned */}
+                            <SelectPrimitive.ItemIndicator>
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Check className="h-4 w-4 text-primary" />
+                              </span>
+                            </SelectPrimitive.ItemIndicator>
+                            {/* Trash icon for custom pairs, only on hover */}
+                            {isCustom && (
+                              <button
+                                type="button"
+                                tabIndex={-1}
+                                className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 text-destructive"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  setTradingPairs((prev) => prev.filter((p) => p !== pair));
+                                  await supabase.from("custom_trading_pairs").delete().eq("pair", pair).eq("user_id", user?.id);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </SelectItem>
+                        );
+                      })}
+                      {/* Divider and Add custom pair action */}
+                      <div className="border-t px-3 py-2 flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={customPairInput}
+                            onChange={e => setCustomPairInput(e.target.value)}
+                            placeholder="Add custom pair"
+                            className="flex-1 px-2 py-1 border rounded text-xs"
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomPair(); } }}
+                          />
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 text-xs px-2 py-1 bg-primary text-white rounded shadow hover:bg-primary/90 transition"
+                            onClick={handleAddCustomPair}
+                            disabled={!customPairInput.trim() || customPairExists}
+                          >
+                            <Plus className="w-4 h-4" /> Add
+                          </button>
+                        </div>
+                        {customPairInput.trim() && customPairExists && (
+                          <span className="text-xs text-muted-foreground mt-1">Pair already exists.</span>
+                        )}
+                      </div>
+                    </div>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        {/* Trade Meta Section */}
+        <h3 className="text-lg font-semibold mt-4 mb-1">Trade Meta</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Show error if present */}
+          {accountsError && (
+            <div className="mb-2 text-red-600 text-sm font-medium col-span-2">
+              {accountsError}
+            </div>
+          )}
+          {/* Account */}
+          <FormField
+            control={form.control}
+            name="account_id"
+            rules={{ required: "Account is required" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Account <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={accountsLoading || accounts.length === 0}>
+                  <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a strategy" />
+                      <SelectValue placeholder={accountsLoading ? "Loading accounts..." : accounts.length === 0 ? "No trading accounts found" : "Select account"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {isStrategiesLoading ? (
-                      <SelectItem value="loading" disabled>
-                        Loading strategies...
-                      </SelectItem>
-                    ) : Array.isArray(strategies) && strategies.length > 0 ? (
-                      strategies.map((strategy) => (
-                        <SelectItem key={strategy.id} value={strategy.id}>
-                          {strategy.name}
-                        </SelectItem>
+                    {/* Only render account options if not loading and not empty */}
+                    {(!accountsLoading && accounts.length > 0) && (
+                      accounts.map((acc: TradingAccount) => (
+                        <SelectItem key={acc.id} value={acc.id}>{acc.name}</SelectItem>
                       ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        No strategies available
-                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -424,114 +704,105 @@ export default function JournalEntryForm({
               </FormItem>
             )}
           />
-
-          {/* Trade Direction */}
+          {/* Session */}
           <FormField
             control={form.control}
-            name="trade_direction"
+            name="session"
+            rules={{ required: "Session is required" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Trade Direction</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel>Session <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select direction" />
+                      <SelectValue placeholder="Select session" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="LONG">Long</SelectItem>
-                    <SelectItem value="SHORT">Short</SelectItem>
+                    {SESSION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          {/* Entry Price */}
+          {/* Commission */}
           <FormField
             control={form.control}
-            name="entry_price"
+            name="commission_fees"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Entry Price</FormLabel>
+                <FormLabel>Commission</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Entry price"
-                    {...field}
-                  />
+                  <Input placeholder="Commission fees" type="number" step="any" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          {/* Exit Price */}
+          {/* Gross PnL */}
           <FormField
             control={form.control}
-            name="exit_price"
+            name="gross_pnl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Exit Price</FormLabel>
+                <FormLabel>Gross PnL</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Exit price"
-                    {...field}
-                  />
+                  <Input placeholder="Gross PnL (optional, overrides auto-calc)" type="number" step="any" {...field} />
+                </FormControl>
+                <FormMessage />
+                <div className="text-xs text-muted-foreground">If you enter a value here, Net PnL will be calculated as Gross PnL minus Commission.</div>
+              </FormItem>
+            )}
+          />
+          {/* RR */}
+          <FormField
+            control={form.control}
+            name="risk_reward_ratio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Risk/Reward Ratio</FormLabel>
+                <FormControl>
+                  <Input placeholder="R/R" type="number" step="any" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          {/* Position Size */}
+          {/* Net PnL (calculated) */}
           <FormField
             control={form.control}
-            name="position_size"
+            name="net_pnl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Position Size</FormLabel>
+                <FormLabel>Net PnL</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Position size"
-                    {...field}
-                  />
+                  <Input placeholder="Net PnL (auto)" type="number" step="any" {...field} readOnly />
                 </FormControl>
                 <FormMessage />
+                <div className="text-xs text-muted-foreground">Net PnL is calculated automatically from Gross PnL and Commission, or from entry/exit/size/direction if Gross PnL is not provided.</div>
               </FormItem>
             )}
           />
-
-          {/* Trading Pair Selection */}
+          {/* Outcome */}
           <FormField
             control={form.control}
-            name="trading_pair"
+            name="trade_outcome"
+            rules={{ required: "Outcome is required" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Trading Pair</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <FormLabel>Outcome <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select trading pair" />
+                      <SelectValue placeholder="Select outcome" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {tradingPairs.map((pair) => (
-                      <SelectItem key={pair} value={pair}>
-                        {pair}
-                      </SelectItem>
+                    {OUTCOME_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -540,135 +811,64 @@ export default function JournalEntryForm({
             )}
           />
         </div>
-
-        {/* Enhanced Image Upload Section */}
-        <div className="space-y-4 col-span-2">
-          <FormLabel>Chart Images</FormLabel>
-          <div
-            {...getRootProps()}
-            onClick={handleUploadClick} // Add this handler
-            className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
-              isDragActive
-                ? "border-primary bg-primary/5 scale-102"
-                : "border-muted",
-              "hover:border-primary hover:bg-primary/5 cursor-pointer"
-            )}
-          >
-            <input {...getInputProps()} ref={fileInputRef} accept="image/*" />
-            {isUploading ? (
-              <div className="flex flex-col items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Uploading images...
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <div className="p-4 rounded-full bg-muted/50">
-                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    Drop your chart images here or click to upload
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Supports: PNG, JPG, GIF (up to 10MB each)
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Image Preview Section - Updated to ensure buttons work */}
-          {uploadedImages.length > 0 && (
-            <div className="mt-6 space-y-3">
-              <div className="flex justify-between items-center">
-                <h4 className="text-sm font-medium">
-                  Uploaded Images ({uploadedImages.length})
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Click to preview • Drag to reorder
-                </p>
-              </div>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-                modifiers={[restrictToParentElement]}
-              >
-                <SortableContext
-                  items={uploadedImages.map((img) => img.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                    {uploadedImages.map((image, index) => (
-                      <SortableImageItem
-                        key={image.id}
-                        id={image.id}
-                        url={image.url}
-                        index={index}
-                        onRemove={() => handleRemoveImage(index)}
-                        onPreview={() => handlePreviewImage(image.url)}
-                      />
+        {/* Psychology Section */}
+        <h3 className="text-lg font-semibold mt-4 mb-1">Psychology</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Emotion */}
+          <FormField
+            control={form.control}
+            name="emotion"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Emotion</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select emotion" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {emotions.map((em) => (
+                      <SelectItem key={em} value={em}>{em}</SelectItem>
                     ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </div>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
           )}
-
-          {/* Enhanced Image Preview Dialog */}
-          <Dialog
-            open={!!previewImage}
-            onOpenChange={(open) => {
-              if (!open) setPreviewImage(null);
-            }}
-          >
-            <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] p-1 overflow-hidden">
-              {previewImage && (
-                <div className="relative w-full h-[85vh]">
-                  <Image
-                    src={previewImage}
-                    alt="Chart preview"
-                    fill
-                    className="object-contain"
-                    sizes="95vw"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                    onClick={() => setPreviewImage(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          />
+          {/* Emotion Reason */}
+          <FormField
+            control={form.control}
+            name="emotion_reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Emotion Reason</FormLabel>
+                <FormControl>
+                  <Input placeholder="Reason for emotion" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-
-        {/* Trade Summary */}
+        {/* Notes Section */}
+        <h3 className="text-lg font-semibold mt-4 mb-1">Notes</h3>
+        <div className="grid grid-cols-1 gap-4">
+          {/* Notes/summary */}
         <FormField
           control={form.control}
           name="summary"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Summary</FormLabel>
+                <FormLabel>Notes / Summary</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Describe your trade and thoughts"
-                  className="h-32"
-                  {...field}
-                />
+                  <Textarea placeholder="Add notes or summary about this trade..." rows={3} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         {/* Lessons Learned */}
         <FormField
           control={form.control}
@@ -677,29 +877,47 @@ export default function JournalEntryForm({
             <FormItem>
               <FormLabel>Lessons Learned</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="What did you learn from this trade?"
-                  className="h-32"
-                  {...field}
-                />
+                  <Textarea placeholder="What did you learn from this trade?" rows={2} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+        </div>
+        {/* Photos Section */}
+        <h3 className="text-lg font-semibold mt-4 mb-1">Photos (max 3)</h3>
+        <div className="flex flex-col gap-2">
+          <div {...getRootProps()} className={cn(
+            "border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer",
+            isDragActive ? "border-primary bg-muted" : "border-muted"
+          )}>
+            <input {...getInputProps()} accept="image/*" multiple disabled={uploadedImages.length >= 3} />
+            <ImageIcon className="w-8 h-8 mb-2 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              {uploadedImages.length < 3 ? "Drag & drop or click to upload (max 3)" : "Maximum 3 images allowed"}
+            </span>
+          </div>
+          {/* Preview grid */}
+          <div className="flex gap-2 mt-2">
+            {uploadedImages.slice(0, 3).map((img, idx) => (
+              <SortableImageItem
+                key={img.id}
+                url={img.url}
+                index={idx}
+                onRemove={() => handleRemoveImage(idx)}
+                onPreview={handlePreviewImage}
+                id={img.id}
+              />
+            ))}
+          </div>
+        </div>
+        {/* Save/Cancel Actions */}
+        <div className="flex justify-end gap-2 mt-6">
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Entry"}
+          <Button type="submit" variant="default" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save"}
           </Button>
         </div>
       </form>

@@ -30,6 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 function adaptFormDataToEntry(
   formData: any,
@@ -65,6 +66,7 @@ export default function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<"week" | "month" | "year" | "all">(
     "all"
   );
@@ -376,191 +378,223 @@ export default function JournalPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="container mx-auto py-6 space-y-8"
-    >
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Trading Journal</h1>
-          <p className="text-muted-foreground mt-1">
-            Track and analyze your trading performance
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={createSampleEntry}
-            variant="outline"
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Sample Entry
-          </Button>
-          <Button asChild className="gap-2">
-            <Link href="/journal/new">
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="container mx-auto py-6 space-y-8"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Trading Journal</h1>
+            <p className="text-muted-foreground mt-1">
+              Track and analyze your trading performance
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={createSampleEntry}
+              variant="outline"
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Sample Entry
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingEntry(null);
+                setIsEntryModalOpen(true);
+              }}
+              className="gap-2"
+            >
               <PlusIcon className="w-4 h-4" />
               New Entry
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Trades
-              </p>
-              <h3 className="text-2xl font-bold mt-1">
-                {filteredEntries.length}
-              </h3>
-            </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <BarChart3 className="w-6 h-6 text-primary" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Total number of trades in the selected period</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </Card>
-        <Card className="p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Win Rate
-              </p>
-              <h3 className="text-2xl font-bold mt-1">
-                {filteredEntries.length > 0
-                  ? `${Math.round(
-                      (filteredEntries.filter(
-                        (e) => e.trade_outcome === "profit"
-                      ).length /
-                        filteredEntries.length) *
-                        100
-                    )}%`
-                  : "0%"}
-              </h3>
-            </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <Calendar className="w-6 h-6 text-primary" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Percentage of profitable trades</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </Card>
-        <Card className="p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Total P/L
-              </p>
-              <h3 className="text-2xl font-bold mt-1">
-                $
-                {filteredEntries
-                  .reduce((sum, entry) => sum + (entry.profit_loss || 0), 0)
-                  .toLocaleString()}
-              </h3>
-            </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <Filter className="w-6 h-6 text-primary" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Total profit/loss across all trades</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </Card>
-      </div>
-
-      {/* Tabs Section */}
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) =>
-          setActiveTab(value as "entries" | "analytics")
-        }
-        className="w-full"
-      >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="entries">Trade Entries</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Select
-              value={timeframe}
-              onValueChange={(value: "week" | "month" | "year" | "all") =>
-                setTimeframe(value)
-              }
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select timeframe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Last Week</SelectItem>
-                <SelectItem value="month">Last Month</SelectItem>
-                <SelectItem value="year">Last Year</SelectItem>
-                <SelectItem value="all">All Time</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setFilters({
-                  direction: null,
-                  outcome: null,
-                  pair: "",
-                  dateRange: { from: null, to: null },
-                })
-              }
-              className="w-full sm:w-auto"
-            >
-              Clear Filters
             </Button>
           </div>
         </div>
 
-        <TabsContent value="entries" className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <JournalFilters onApplyFilters={handleApplyFilters} />
-            <div className="text-sm text-muted-foreground">
-              Showing {filteredEntries.length} of {entries.length} entries
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <Card className="p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Trades
+                </p>
+                <h3 className="text-2xl font-bold mt-1">
+                  {filteredEntries.length}
+                </h3>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="p-3 bg-primary/10 rounded-full">
+                      <BarChart3 className="w-6 h-6 text-primary" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Total number of trades in the selected period</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </Card>
+          <Card className="p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Win Rate
+                </p>
+                <h3 className="text-2xl font-bold mt-1">
+                  {filteredEntries.length > 0
+                    ? `${Math.round(
+                        (filteredEntries.filter(
+                          (e) => e.trade_outcome === "profit"
+                        ).length /
+                          filteredEntries.length) *
+                          100
+                      )}%`
+                    : "0%"}
+                </h3>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="p-3 bg-primary/10 rounded-full">
+                      <Calendar className="w-6 h-6 text-primary" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Percentage of profitable trades</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </Card>
+          <Card className="p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total P/L
+                </p>
+                <h3 className="text-2xl font-bold mt-1">
+                  $
+                  {filteredEntries
+                    .reduce((sum, entry) => sum + (entry.profit_loss || 0), 0)
+                    .toLocaleString()}
+                </h3>
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="p-3 bg-primary/10 rounded-full">
+                      <Filter className="w-6 h-6 text-primary" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Total profit/loss across all trades</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabs Section */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "entries" | "analytics")
+          }
+          className="w-full"
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <TabsList className="w-full sm:w-auto">
+              <TabsTrigger value="entries">Trade Entries</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            </TabsList>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Select
+                value={timeframe}
+                onValueChange={(value: "week" | "month" | "year" | "all") =>
+                  setTimeframe(value)
+                }
+              >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Select timeframe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">Last Week</SelectItem>
+                  <SelectItem value="month">Last Month</SelectItem>
+                  <SelectItem value="year">Last Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setFilters({
+                    direction: null,
+                    outcome: null,
+                    pair: "",
+                    dateRange: { from: null, to: null },
+                  })
+                }
+                className="w-full sm:w-auto"
+              >
+                Clear Filters
+              </Button>
             </div>
           </div>
-          <JournalEntryList
-            entries={filteredEntries}
-            loading={loading}
-            onEdit={setEditingEntry}
-            onDelete={deleteEntry}
-          />
-        </TabsContent>
 
-        <TabsContent value="analytics">
-          <TradeStatistics entries={filteredEntries} timeframe={timeframe} />
-        </TabsContent>
-      </Tabs>
-    </motion.div>
+          <TabsContent value="entries" className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <JournalFilters onApplyFilters={handleApplyFilters} />
+              <div className="text-sm text-muted-foreground">
+                Showing {filteredEntries.length} of {entries.length} entries
+              </div>
+            </div>
+            <JournalEntryList
+              entries={filteredEntries}
+              loading={loading}
+              onEdit={(entry) => {
+                setEditingEntry(entry);
+                setIsEntryModalOpen(true);
+              }}
+              onDelete={deleteEntry}
+            />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <TradeStatistics entries={filteredEntries} timeframe={timeframe} />
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+      <Dialog open={isEntryModalOpen} onOpenChange={(open) => {
+        setIsEntryModalOpen(open);
+        if (!open) setEditingEntry(null);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <JournalEntryForm
+            onSubmit={async (data) => {
+              if (editingEntry && editingEntry.id) {
+                await updateEntry(editingEntry.id, data);
+              } else {
+                await createEntry(data);
+              }
+              setIsEntryModalOpen(false);
+              setEditingEntry(null);
+            }}
+            onCancel={() => {
+              setIsEntryModalOpen(false);
+              setEditingEntry(null);
+            }}
+            defaultValues={editingEntry || undefined}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

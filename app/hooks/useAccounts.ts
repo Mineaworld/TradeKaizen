@@ -55,7 +55,7 @@ export function useAccounts() {
   const fetchAccounts = async () => {
     try {
       const { data, error } = await supabase
-        .from("trading_accounts")
+        .from("accounts")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -64,8 +64,8 @@ export function useAccounts() {
       setAccounts(
         data.map((account) => ({
           ...account,
-          availableBalance: account.available_balance,
-          initialBalance: account.initial_balance,
+          availableBalance: account.available_balance ?? 0,
+          initialBalance: account.initial_balance ?? account.balance ?? 0,
           profitTarget: account.profit_target,
           maxDrawdown: account.max_drawdown,
           isActive: account.is_active,

@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Edit, Trash2, ChevronDown } from "lucide-react";
+import { ArrowUpDown, Edit, Trash2, ChevronDown, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -35,7 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface JournalEntryListProps {
   entries: JournalEntry[];
   loading: boolean;
-  onEdit: (entry: JournalEntry) => void;
+  onEdit: (entry: JournalEntry | null) => void;
   onDelete: (id: number) => void;
 }
 
@@ -89,11 +89,15 @@ export default function JournalEntryList({
 
   if (entries.length === 0) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="p-8 text-center flex flex-col items-center gap-4">
+        <PlusCircle className="w-12 h-12 text-primary mb-2" aria-hidden="true" />
         <h3 className="text-lg font-medium">No journal entries found</h3>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-2 mb-4">
           Start by adding your first trade journal entry.
         </p>
+        <Button onClick={() => onEdit(null)} variant="default" className="gap-2" aria-label="Add new journal entry">
+          <PlusCircle className="w-5 h-5" /> Add Entry
+        </Button>
       </Card>
     );
   }

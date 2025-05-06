@@ -45,6 +45,10 @@ export interface Database {
           trade_execution_rating?: number | null;
           trade_management_notes?: string | null;
           trade_exit_reason?: string | null;
+          account_id?: string | null;
+          session?: string | null;
+          emotion_reason?: string | null;
+          photos?: string[] | null;
         };
         Insert: {
           id?: number;
@@ -81,6 +85,10 @@ export interface Database {
           trade_execution_rating?: number | null;
           trade_management_notes?: string | null;
           trade_exit_reason?: string | null;
+          account_id?: string | null;
+          session?: string | null;
+          emotion_reason?: string | null;
+          photos?: string[] | null;
         };
         Update: {
           id?: number;
@@ -117,6 +125,10 @@ export interface Database {
           trade_execution_rating?: number | null;
           trade_management_notes?: string | null;
           trade_exit_reason?: string | null;
+          account_id?: string | null;
+          session?: string | null;
+          emotion_reason?: string | null;
+          photos?: string[] | null;
         };
       };
       strategies: {
