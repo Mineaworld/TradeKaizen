@@ -50,6 +50,8 @@ export default function NewJournalEntryPage() {
         profit_loss: profitLoss,
         strategy_id: data.strategy_id || null,
       };
+      // Remove chart_images if present, and ensure photos is used
+      delete entryData.chart_images;
 
       const { error } = await supabase
         .from("journal_entries")

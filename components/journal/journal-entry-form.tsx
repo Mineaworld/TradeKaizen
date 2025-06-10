@@ -70,6 +70,7 @@ import { useAccounts, TradingAccount } from "../../app/hooks/useAccounts";
 import { ALL_TRADING_PAIRS } from "@/lib/constants";
 import { useAuth } from "@/contexts/auth-context";
 import * as SelectPrimitive from "@radix-ui/react-select";
+import { useToast } from "@/components/ui/use-toast";
 
 interface JournalEntryFormProps {
   onSubmit: (data: any) => void;
@@ -185,6 +186,7 @@ export default function JournalEntryForm({
   const [isAddingPair, setIsAddingPair] = useState(false);
   const [pairSearch, setPairSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -195,28 +197,26 @@ export default function JournalEntryForm({
 
   const form = useForm({
     defaultValues: {
-      title: defaultValues?.title || "",
-      entry_date: defaultValues?.entry_date
-        ? new Date(defaultValues.entry_date)
+      trade_date: defaultValues?.trade_date
+        ? new Date(defaultValues.trade_date)
         : new Date(),
       trade_direction: defaultValues?.trade_direction || "",
       entry_price: defaultValues?.entry_price || "",
       exit_price: defaultValues?.exit_price || "",
       position_size: defaultValues?.position_size || "",
-      summary: defaultValues?.summary || "",
-      lessons_learned: defaultValues?.lessons_learned || "",
+      trade_notes: defaultValues?.trade_notes || "",
+      trade_lessons: defaultValues?.trade_lessons || "",
       strategy_id: defaultValues?.strategy_id || "",
-      trading_pair: defaultValues?.trading_pair || "",
-      chart_images: defaultValues?.chart_images || [],
+      trade_pair: defaultValues?.trade_pair || "",
+      photos: defaultValues?.photos || [],
       account_id: defaultValues?.account_id || "",
       session: defaultValues?.session || "",
       commission_fees: defaultValues?.commission_fees || "",
       risk_reward_ratio: defaultValues?.risk_reward_ratio || "",
       gross_pnl: defaultValues?.gross_pnl || "",
       trade_outcome: defaultValues?.trade_outcome || "",
-      emotion: defaultValues?.emotion || "",
+      emotions: defaultValues?.emotions || "",
       emotion_reason: defaultValues?.emotion_reason || "",
-      photos: defaultValues?.photos || [],
       net_pnl: defaultValues?.net_pnl || "",
     },
   });
@@ -288,8 +288,8 @@ export default function JournalEntryForm({
         });
 
         // Add to form values immediately with temporary URL
-        const currentImages = form.getValues("chart_images") || [];
-        form.setValue("chart_images", [...currentImages, previewUrl]);
+        const currentImages = form.getValues("photos") || [];
+        form.setValue("photos", [...currentImages, previewUrl]);
 
         // Use the storage helper to upload in background
         const publicUrl = await storageHelper.uploadImage(
@@ -306,12 +306,20 @@ export default function JournalEntryForm({
 
         // Update form value with permanent URL
         const updatedImages = form
-          .getValues("chart_images")
+          .getValues("photos")
           .map((url: string) => (url === previewUrl ? publicUrl : url));
-        form.setValue("chart_images", updatedImages);
+        form.setValue("photos", updatedImages);
+        toast({
+          title: "Image uploaded",
+          description: "Image uploaded successfully.",
+        });
       } catch (error) {
         console.error("Error uploading file:", error);
-        // Show error toast or notification here
+        toast({
+          title: "Image upload failed",
+          description: error instanceof Error ? error.message : String(error),
+          variant: "destructive",
+        });
       }
     }
 
@@ -340,7 +348,7 @@ export default function JournalEntryForm({
 
         // Also update the form values to maintain the same order
         const imageUrls = newOrder.map((item) => item.url);
-        form.setValue("chart_images", imageUrls);
+        form.setValue("photos", imageUrls);
 
         return newOrder;
       });
@@ -362,7 +370,7 @@ export default function JournalEntryForm({
 
       // Update form data with the new image URLs
       const newImageUrls = newImages.map((img) => img.url);
-      form.setValue("chart_images", newImageUrls);
+      form.setValue("photos", newImageUrls);
     }
   };
 
@@ -375,6 +383,18 @@ export default function JournalEntryForm({
 
   // Handle form submission
   const handleSubmit = (data: any) => {
+    // Convert empty string integer fields to null
+    const integerFields = [
+      'trade_duration',
+      'strategy_id',
+      'trade_quality_score',
+      'trade_execution_rating',
+    ];
+    integerFields.forEach((field) => {
+      if (data[field] === "") {
+        data[field] = null;
+      }
+    });
     // Calculate net PnL if possible
     let netPnl = 0;
     // If user provided gross_pnl, use it for net_pnl calculation
@@ -454,6 +474,31 @@ export default function JournalEntryForm({
     (pair) => pair.toLowerCase() === customPairInput.trim().toLowerCase()
   );
 
+  // Remove all images handler
+  const handleRemoveAllImages = () => {
+    setUploadedImages([]);
+    form.setValue("photos", []);
+  };
+
+  // After upload, always sync uploadedImages with the permanent URLs in form.photos
+  useEffect(() => {
+    // Only update if the form's photos field has changed
+    const photos = form.watch("photos") || [];
+    // If the number of uploadedImages doesn't match, or any url is different, update
+    if (
+      photos.length !== uploadedImages.length ||
+      photos.some((url: string, i: number) => uploadedImages[i]?.url !== url)
+    ) {
+      setUploadedImages(
+        photos.map((url: string, i: number) => ({
+          url,
+          file: undefined, // We don't need the file after upload
+          id: `uploaded-${i}-${url}`,
+        }))
+      );
+    }
+  }, [form.watch("photos")]);
+
   return (
     <FormRoot {...form}>
       <form
@@ -473,7 +518,7 @@ export default function JournalEntryForm({
           <div className="md:w-2/5 w-full">
           <FormField
             control={form.control}
-            name="entry_date"
+            name="trade_date"
               rules={{ required: "Date is required" }}
             render={({ field }) => (
                 <FormItem>
@@ -562,7 +607,7 @@ export default function JournalEntryForm({
           {/* Trading Pair */}
           <FormField
             control={form.control}
-            name="trading_pair"
+            name="trade_pair"
             rules={{ required: "Trading pair is required" }}
             render={({ field }) => (
               <FormItem>
@@ -817,7 +862,7 @@ export default function JournalEntryForm({
           {/* Emotion */}
           <FormField
             control={form.control}
-            name="emotion"
+            name="emotions"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Emotion</FormLabel>
@@ -850,15 +895,15 @@ export default function JournalEntryForm({
                 <FormMessage />
               </FormItem>
             )}
-          />
-        </div>
+            />
+            </div>
         {/* Notes Section */}
         <h3 className="text-lg font-semibold mt-4 mb-1">Notes</h3>
         <div className="grid grid-cols-1 gap-4">
           {/* Notes/summary */}
         <FormField
           control={form.control}
-          name="summary"
+          name="trade_notes"
           render={({ field }) => (
             <FormItem>
                 <FormLabel>Notes / Summary</FormLabel>
@@ -872,7 +917,7 @@ export default function JournalEntryForm({
         {/* Lessons Learned */}
         <FormField
           control={form.control}
-          name="lessons_learned"
+          name="trade_lessons"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Lessons Learned</FormLabel>
@@ -888,7 +933,7 @@ export default function JournalEntryForm({
         <h3 className="text-lg font-semibold mt-4 mb-1">Photos (max 3)</h3>
         <div className="flex flex-col gap-2">
           <div {...getRootProps()} className={cn(
-            "border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer",
+            "border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer relative",
             isDragActive ? "border-primary bg-muted" : "border-muted"
           )}>
             <input {...getInputProps()} accept="image/*" multiple disabled={uploadedImages.length >= 3} />
@@ -896,6 +941,11 @@ export default function JournalEntryForm({
             <span className="text-sm text-muted-foreground">
               {uploadedImages.length < 3 ? "Drag & drop or click to upload (max 3)" : "Maximum 3 images allowed"}
             </span>
+            {isUploading && (
+              <div className="absolute inset-0 bg-background/70 flex items-center justify-center z-10">
+                <Loader2 className="animate-spin w-8 h-8 text-primary" />
+              </div>
+            )}
           </div>
           {/* Preview grid */}
           <div className="flex gap-2 mt-2">
@@ -910,14 +960,25 @@ export default function JournalEntryForm({
               />
             ))}
           </div>
+          {uploadedImages.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-2 self-end"
+              onClick={handleRemoveAllImages}
+              size="sm"
+            >
+              Remove All Images
+            </Button>
+          )}
         </div>
         {/* Save/Cancel Actions */}
         <div className="flex justify-end gap-2 mt-6">
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting || isUploading}>
             Cancel
           </Button>
-          <Button type="submit" variant="default" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
+          <Button type="submit" variant="default" disabled={isSubmitting || isUploading}>
+            {isSubmitting || isUploading ? "Saving..." : "Save"}
           </Button>
         </div>
       </form>
