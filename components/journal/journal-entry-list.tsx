@@ -145,6 +145,10 @@ export default function JournalEntryList({
                 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
               </TableHead>
               <TableHead>Outcome</TableHead>
+              <TableHead>Net PnL</TableHead>
+              <TableHead>Notes</TableHead>
+              <TableHead>Session</TableHead>
+              <TableHead>Account</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -161,24 +165,36 @@ export default function JournalEntryList({
                     className={
                       entry.trade_direction === "LONG"
                         ? "border-green-500 text-green-500"
-                        : "border-red-500 text-red-500"
+                        : entry.trade_direction === "SHORT"
+                        ? "border-red-500 text-red-500"
+                        : ""
                     }
                   >
-                    {entry.trade_direction}
+                    {entry.trade_direction === "LONG"
+                      ? "Long"
+                      : entry.trade_direction === "SHORT"
+                      ? "Short"
+                      : "-"}
                   </Badge>
                 </TableCell>
                 <TableCell>{entry.entry_price.toFixed(2)}</TableCell>
                 <TableCell>{entry.exit_price.toFixed(2)}</TableCell>
                 <TableCell
                   className={
-                    entry.profit_loss > 0
+                    (entry.net_pnl !== undefined && entry.net_pnl !== null
+                      ? entry.net_pnl
+                      : entry.profit_loss) > 0
                       ? "text-green-600"
-                      : entry.profit_loss < 0
+                      : (entry.net_pnl !== undefined && entry.net_pnl !== null
+                          ? entry.net_pnl
+                          : entry.profit_loss) < 0
                       ? "text-red-600"
                       : ""
                   }
                 >
-                  {entry.profit_loss.toFixed(2)}
+                  {entry.net_pnl !== undefined && entry.net_pnl !== null
+                    ? entry.net_pnl.toFixed(2)
+                    : entry.profit_loss.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -193,6 +209,10 @@ export default function JournalEntryList({
                     {entry.trade_outcome}
                   </Badge>
                 </TableCell>
+                <TableCell>{entry.net_pnl !== undefined && entry.net_pnl !== null ? entry.net_pnl.toFixed(2) : "-"}</TableCell>
+                <TableCell>{entry.trade_notes || ""}</TableCell>
+                <TableCell>{entry.session || ""}</TableCell>
+                <TableCell>{entry.account_id || ""}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

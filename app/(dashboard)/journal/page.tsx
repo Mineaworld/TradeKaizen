@@ -36,17 +36,24 @@ function adaptFormDataToEntry(
   formData: any,
   userId?: string
 ): Omit<JournalEntry, "id" | "created_at" | "updated_at"> {
+  // Normalize direction and outcome
+  const direction = formData.trade_direction === "LONG" || formData.trade_direction === "SHORT"
+    ? formData.trade_direction
+    : formData.trade_direction?.toUpperCase() === "BUY" ? "LONG" : formData.trade_direction?.toUpperCase() === "SELL" ? "SHORT" : "LONG";
+  const outcome = ["WIN", "LOSS", "BREAKEVEN"].includes(formData.trade_outcome)
+    ? formData.trade_outcome
+    : formData.trade_outcome?.toUpperCase() === "PROFIT" ? "WIN" : formData.trade_outcome?.toUpperCase() === "LOSS" ? "LOSS" : formData.trade_outcome?.toUpperCase() === "BREAKEVEN" ? "BREAKEVEN" : "WIN";
   return {
     trade_date:
       typeof formData.trade_date === "string"
         ? formData.trade_date
         : formData.trade_date.toISOString().split("T")[0],
     trade_pair: formData.trade_pair,
-    trade_direction: formData.trade_direction,
+    trade_direction: direction,
     entry_price: Number(formData.entry_price),
     exit_price: Number(formData.exit_price),
     position_size: Number(formData.position_size),
-    trade_outcome: formData.trade_outcome,
+    trade_outcome: outcome,
     trade_duration: formData.trade_duration,
     trade_setup: formData.trade_setup || null,
     trade_notes: formData.trade_notes || null,
@@ -58,6 +65,9 @@ function adaptFormDataToEntry(
     trade_screenshot: formData.trade_screenshot || null,
     user_id: userId || "",
     profit_loss: 0, // This will be calculated in createEntry
+    net_pnl: formData.net_pnl || null,
+    session: formData.session || null,
+    account_id: formData.account_id || null,
   };
 }
 
@@ -207,16 +217,19 @@ export default function JournalPage() {
     if (!user) return;
 
     try {
+      const profitLoss =
+        (entry.exit_price - entry.entry_price) *
+        entry.position_size *
+        (entry.trade_direction === "LONG" ? 1 : -1);
+      const netPnl = entry.net_pnl !== undefined && entry.net_pnl !== null ? entry.net_pnl : profitLoss;
       const { data, error } = await supabase
         .from("journal_entries")
         .insert([
           {
             ...entry,
             user_id: user.id,
-            profit_loss:
-              (entry.exit_price - entry.entry_price) *
-              entry.position_size *
-              (entry.trade_direction === "LONG" ? 1 : -1),
+            profit_loss: profitLoss,
+            net_pnl: netPnl,
           },
         ])
         .select();
@@ -261,6 +274,7 @@ export default function JournalPage() {
             (exitPrice - entryPrice) *
             positionSize *
             (direction === "LONG" ? 1 : -1);
+          updates.net_pnl = entry.net_pnl !== undefined && entry.net_pnl !== null ? entry.net_pnl : updates.profit_loss;
         }
       }
 
@@ -329,11 +343,11 @@ export default function JournalPage() {
     const sampleEntry = {
       trade_date: new Date().toISOString().split("T")[0],
       trade_pair: "BTC/USD",
-      trade_direction: "buy",
+      trade_direction: "LONG",
       entry_price: 45000,
       exit_price: 46000,
       position_size: 1,
-      trade_outcome: "profit",
+      trade_outcome: "WIN",
       trade_duration: 60, // Changed to number (minutes)
       trade_setup: "breakout",
       trade_notes: "Good entry point based on technical analysis.",
@@ -345,6 +359,9 @@ export default function JournalPage() {
       trade_screenshot: null,
       user_id: user.id,
       profit_loss: 1000,
+      net_pnl: 1000,
+      session: "London Session",
+      account_id: null,
     };
 
     try {
@@ -451,7 +468,7 @@ export default function JournalPage() {
                   {filteredEntries.length > 0
                     ? `${Math.round(
                         (filteredEntries.filter(
-                          (e) => e.trade_outcome === "profit"
+                          (e) => e.trade_outcome === "WIN"
                         ).length /
                           filteredEntries.length) *
                           100
@@ -482,7 +499,7 @@ export default function JournalPage() {
                 <h3 className="text-2xl font-bold mt-1">
                   $
                   {filteredEntries
-                    .reduce((sum, entry) => sum + (entry.profit_loss || 0), 0)
+                    .reduce((sum, entry) => sum + (entry.net_pnl || 0), 0)
                     .toLocaleString()}
                 </h3>
               </div>
