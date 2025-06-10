@@ -26,6 +26,7 @@ import {
   Moon,
   LogOut,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Navigation() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ export function Navigation() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const [activeIdx, setActiveIdx] = useState(-1);
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -173,40 +175,48 @@ export function Navigation() {
         {/* Navigation Links */}
         <div className="flex-grow py-4 overflow-y-auto">
           <div className="px-3 space-y-1">
-            {navigation.map((item) => {
+            {navigation.map((item, idx) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
-                <Link
+                <motion.div
                   key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center rounded-md transition-colors",
-                    isCollapsed
-                      ? "justify-center py-3 px-2"
-                      : "py-2.5 px-3 space-x-3",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  )}
+                  whileTap={{ scale: 0.92, rotate: -2 }}
+                  animate={activeIdx === idx ? { scale: 1.1, color: "#0070f3" } : { scale: 1, color: "#222" }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  onClick={() => setActiveIdx(idx)}
+                  style={{ display: "block", cursor: "pointer" }}
                 >
-                  <ClientOnlyIcon>
-                    <Icon
-                      className={cn(
-                        "h-5 w-5",
-                        isActive ? "text-primary" : "opacity-70"
-                      )}
-                    />
-                  </ClientOnlyIcon>
-                  {!isCollapsed && (
-                    <span className="font-medium">{item.name}</span>
-                  )}
-                  {!isCollapsed && item.name === "Resources" && (
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center rounded-md transition-colors",
+                      isCollapsed
+                        ? "justify-center py-3 px-2"
+                        : "py-2.5 px-3 space-x-3",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
                     <ClientOnlyIcon>
-                      <ChevronDown className="h-3 w-3 ml-auto opacity-70" />
+                      <Icon
+                        className={cn(
+                          "h-5 w-5",
+                          isActive ? "text-primary" : "opacity-70"
+                        )}
+                      />
                     </ClientOnlyIcon>
-                  )}
-                </Link>
+                    {!isCollapsed && (
+                      <span className="font-medium">{item.name}</span>
+                    )}
+                    {!isCollapsed && item.name === "Resources" && (
+                      <ClientOnlyIcon>
+                        <ChevronDown className="h-3 w-3 ml-auto opacity-70" />
+                      </ClientOnlyIcon>
+                    )}
+                  </Link>
+                </motion.div>
               );
             })}
           </div>

@@ -20,6 +20,7 @@ import {
   AUTH_NAV_ITEMS,
 } from "@/config/navigation";
 import { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 const BUTTON_STYLES = {
   base: "flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors",
@@ -35,6 +36,7 @@ export function MobileNav(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
+  const [activeIdx, setActiveIdx] = useState(-1);
 
   return (
     <>
@@ -90,24 +92,32 @@ export function MobileNav(): JSX.Element {
         aria-label="Bottom navigation"
       >
         <div className="grid grid-cols-4 gap-1 p-2">
-          {USER_NAV_ITEMS.slice(0, 3).map((item) => {
+          {USER_NAV_ITEMS.slice(0, 3).map((item, idx) => {
             const Icon = item.icon as LucideIcon;
             const isActive = pathname === item.href;
             return (
-              <Link
+              <motion.div
                 key={item.name}
-                href={item.href}
-                className={cn(
-                  BUTTON_STYLES.base,
-                  isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-                aria-label={item.description}
+                whileTap={{ scale: 0.92, rotate: -2 }}
+                animate={activeIdx === idx ? { scale: 1.1, color: "#0070f3" } : { scale: 1, color: "#222" }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                onClick={() => setActiveIdx(idx)}
+                style={{ display: "inline-block", cursor: "pointer" }}
               >
-                <Icon className={BUTTON_STYLES.icon} aria-hidden="true" />
-                <span className={BUTTON_STYLES.text}>{item.name}</span>
-              </Link>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    BUTTON_STYLES.base,
+                    isActive
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  )}
+                  aria-label={item.description}
+                >
+                  <Icon className={BUTTON_STYLES.icon} aria-hidden="true" />
+                  <span className={BUTTON_STYLES.text}>{item.name}</span>
+                </Link>
+              </motion.div>
             );
           })}
 

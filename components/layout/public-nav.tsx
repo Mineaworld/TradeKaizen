@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { MARKETING_NAV_ITEMS } from "@/config/navigation";
+import { useState } from "react";
 
 // Constants
 const BUTTON_STYLES = {
@@ -30,6 +31,7 @@ const itemVariants = {
  */
 export default function PublicNav(): JSX.Element {
   const { user } = useAuth();
+  const [activeIdx, setActiveIdx] = useState(-1);
 
   return (
     <motion.nav
@@ -61,8 +63,11 @@ export default function PublicNav(): JSX.Element {
             {MARKETING_NAV_ITEMS.map((item, i) => (
               <motion.div
                 key={item.href}
-                variants={itemVariants}
-                transition={{ duration: 0.3, delay: 0.2 + i * 0.1 }}
+                whileTap={{ scale: 0.92, rotate: -2 }}
+                animate={activeIdx === i ? { scale: 1.1, color: "#0070f3" } : { scale: 1, color: "#222" }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                onClick={() => setActiveIdx(i)}
+                style={{ display: "inline-block", cursor: "pointer" }}
               >
                 <a
                   href={item.href}

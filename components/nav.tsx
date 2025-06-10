@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -23,6 +25,7 @@ const navItems = [
 export function Nav() {
   const { user, signOut, isLoading } = useAuth();
   const router = useRouter();
+  const [activeIdx, setActiveIdx] = useState(-1);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -37,14 +40,22 @@ export function Nav() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
+            {navItems.map((item, idx) => (
+              <motion.div
                 key={item.name}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                whileTap={{ scale: 0.92, rotate: -2 }}
+                animate={activeIdx === idx ? { scale: 1.1, color: "#0070f3" } : { scale: 1, color: "#222" }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                onClick={() => setActiveIdx(idx)}
+                style={{ display: "inline-block", cursor: "pointer" }}
               >
-                {item.name}
-              </Link>
+                <Link
+                  href={item.href}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {item.name}
+                </Link>
+              </motion.div>
             ))}
           </div>
 
@@ -122,14 +133,22 @@ export function Nav() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px] mt-2">
-                {navItems.map((item) => (
+                {navItems.map((item, idx) => (
                   <DropdownMenuItem key={item.name} asChild>
-                    <Link
-                      href={item.href}
-                      className="w-full cursor-pointer font-medium"
+                    <motion.div
+                      whileTap={{ scale: 0.92, rotate: -2 }}
+                      animate={activeIdx === idx ? { scale: 1.1, color: "#0070f3" } : { scale: 1, color: "#222" }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      onClick={() => setActiveIdx(idx)}
+                      style={{ display: "inline-block", width: "100%" }}
                     >
-                      {item.name}
-                    </Link>
+                      <Link
+                        href={item.href}
+                        className="w-full cursor-pointer font-medium"
+                      >
+                        {item.name}
+                      </Link>
+                    </motion.div>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
