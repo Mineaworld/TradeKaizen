@@ -44,7 +44,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useStrategies } from "@/contexts/strategy-context";
-import Image from "next/image";
+import { Image } from "@/components/ui/image";
 import { useDropzone } from "react-dropzone";
 import { supabase, storageHelper } from "@/lib/supabase";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -125,6 +125,7 @@ const SortableImageItem = ({
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          fallback={<div className="flex items-center justify-center w-full h-full bg-muted text-muted-foreground">Image failed</div>}
         />
         <div className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -179,6 +180,7 @@ export default function JournalEntryForm({
   const [tradingPairs, setTradingPairs] = useState<string[]>([
     "NQ", "XAU", "EUR/USD", "BTC/USD", "SPX", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "USD/CHF", "NZD/USD"
   ]);
+  const previewImageRef = useRef<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [emotions, setEmotions] = useState<string[]>(["Excited", "Anxious", "Confident", "Fearful", "Frustrated", "Calm"]);
@@ -374,10 +376,22 @@ export default function JournalEntryForm({
     }
   };
 
-  // Updated preview handler - make it more direct
+  // Clean up object URL when previewImage changes or is cleared
+  useEffect(() => {
+    // If the previous previewImage was an object URL, revoke it
+    return () => {
+      if (previewImageRef.current && previewImageRef.current.startsWith("blob:")) {
+        URL.revokeObjectURL(previewImageRef.current);
+      }
+    };
+  }, [previewImage]);
+
+  // When setting a new preview image, revoke the old one if needed
   const handlePreviewImage = (url: string) => {
-    console.log("Previewing image:", url);
-    // Directly set the state without timeout
+    if (previewImageRef.current && previewImageRef.current.startsWith("blob:")) {
+      URL.revokeObjectURL(previewImageRef.current);
+    }
+    previewImageRef.current = url;
     setPreviewImage(url);
   };
 
@@ -498,6 +512,19 @@ export default function JournalEntryForm({
       );
     }
   }, [form.watch("photos")]);
+
+  // Initialize uploadedImages from defaultValues.photos on mount (for edit mode)
+  useEffect(() => {
+    if (defaultValues?.photos && Array.isArray(defaultValues.photos) && defaultValues.photos.length > 0) {
+      setUploadedImages(
+        defaultValues.photos.map((url: string, i: number) => ({
+          url,
+          file: undefined,
+          id: `uploaded-${i}-${url}`,
+        }))
+      );
+    }
+  }, [defaultValues?.photos]);
 
   return (
     <FormRoot {...form}>
@@ -982,6 +1009,38 @@ export default function JournalEntryForm({
           </Button>
         </div>
       </form>
+      {/* Image Preview Dialog */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => {
+        if (!open && previewImageRef.current && previewImageRef.current.startsWith("blob:")) {
+          URL.revokeObjectURL(previewImageRef.current);
+          previewImageRef.current = null;
+        }
+        setPreviewImage(null);
+      }}>
+        <DialogContent className="max-w-3xl p-0">
+          <div className="relative aspect-video w-full overflow-hidden rounded-md bg-background">
+            {previewImage && (
+              <Image
+                src={previewImage}
+                alt="Image preview"
+                fill
+                className="object-contain"
+                fallback={<div className="flex items-center justify-center w-full h-full bg-muted text-muted-foreground">Image failed</div>}
+              />
+            )}
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+              onClick={() => setPreviewImage(null)}
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close preview</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </FormRoot>
   );
 }

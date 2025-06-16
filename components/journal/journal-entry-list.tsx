@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAccounts, TradingAccount } from "@/app/hooks/useAccounts";
 
 interface JournalEntryListProps {
   entries: JournalEntry[];
@@ -48,6 +49,14 @@ export default function JournalEntryList({
   const [sortField, setSortField] = useState<keyof JournalEntry>("trade_date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
+  const { accounts, loading: accountsLoading } = useAccounts();
+
+  // Build a map from account_id to account name
+  const accountIdToNameMap = accounts.reduce((acc, account) => {
+    acc[account.id] = account.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   const sortedEntries = [...entries].sort((a, b) => {
     const aValue = a[sortField];
@@ -212,7 +221,15 @@ export default function JournalEntryList({
                 <TableCell>{entry.net_pnl !== undefined && entry.net_pnl !== null ? entry.net_pnl.toFixed(2) : "-"}</TableCell>
                 <TableCell>{entry.trade_notes || ""}</TableCell>
                 <TableCell>{entry.session || ""}</TableCell>
-                <TableCell>{entry.account_id || ""}</TableCell>
+                <TableCell>
+                  {
+                    accountsLoading
+                      ? "Loading..."
+                      : entry.account_id
+                        ? accountIdToNameMap[entry.account_id] || entry.account_id
+                        : ""
+                  }
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
