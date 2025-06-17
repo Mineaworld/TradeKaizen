@@ -29,15 +29,14 @@ export interface AccountPerformance {
 
 export interface Trade {
   id: string;
-  pair: string;
-  type: "BUY" | "SELL";
+  symbol: string;
   entryPrice: number;
   exitPrice?: number;
-  volume: number;
-  pnl?: number;
+  positionSize?: number;
+  profitLoss?: number;
   status: "OPEN" | "CLOSED";
-  openedAt: string;
-  closedAt?: string;
+  entryDate: string;
+  exitDate?: string;
 }
 
 const supabase = createClient(
@@ -85,41 +84,6 @@ export function useAccounts() {
     }
   };
 
-  // Fetch account performance
-  const fetchAccountPerformance = async (
-    accountId: string,
-    days: number = 30
-  ) => {
-    try {
-      const { data, error } = await supabase
-        .from("account_performance_history")
-        .select("*")
-        .eq("account_id", accountId)
-        .gte(
-          "timestamp",
-          new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-        )
-        .order("timestamp", { ascending: true });
-
-      if (error) throw error;
-
-      return data.map((perf) => ({
-        balance: perf.balance,
-        equity: perf.equity,
-        dailyPnl: perf.daily_pnl,
-        openPositions: perf.open_positions,
-        timestamp: perf.timestamp,
-      }));
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch account performance",
-        variant: "destructive",
-      });
-      return [];
-    }
-  };
-
   // Fetch account trades
   const fetchAccountTrades = async (accountId: string, limit: number = 50) => {
     try {
@@ -127,22 +91,21 @@ export function useAccounts() {
         .from("trades")
         .select("*")
         .eq("account_id", accountId)
-        .order("opened_at", { ascending: false })
+        .order("entry_date", { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
       return data.map((trade) => ({
         id: trade.id,
-        pair: trade.pair,
-        type: trade.type,
+        symbol: trade.symbol,
         entryPrice: trade.entry_price,
         exitPrice: trade.exit_price,
-        volume: trade.volume,
-        pnl: trade.pnl,
+        positionSize: trade.position_size,
+        profitLoss: trade.profit_loss,
         status: trade.status,
-        openedAt: trade.opened_at,
-        closedAt: trade.closed_at,
+        entryDate: trade.entry_date,
+        exitDate: trade.exit_date,
       }));
     } catch (err) {
       toast({
@@ -185,7 +148,6 @@ export function useAccounts() {
     accounts,
     loading,
     error,
-    fetchAccountPerformance,
     fetchAccountTrades,
     refetch: fetchAccounts,
   };

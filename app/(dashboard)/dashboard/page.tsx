@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import {
@@ -22,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useAccounts } from "@/app/hooks/useAccounts";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -38,43 +39,13 @@ interface TradingAccount {
   lastUpdated: string;
 }
 
-// Sample accounts data - Replace with API call
-const accounts: TradingAccount[] = [
-  {
-    id: "funded-1",
-    name: "FTMO Phase 2 $100K",
-    type: "funded",
-    balance: 105420,
-    availableBalance: 98650,
-    provider: "FTMO",
-    phase: 2,
-    lastUpdated: "2024-02-20",
-  },
-  {
-    id: "funded-2",
-    name: "TrueForex $50K",
-    type: "funded",
-    balance: 52450,
-    availableBalance: 37450,
-    provider: "TrueForex",
-    phase: 1,
-    lastUpdated: "2024-02-20",
-  },
-  {
-    id: "real-1",
-    name: "Personal Account",
-    type: "real",
-    balance: 25000,
-    availableBalance: 24850,
-    lastUpdated: "2024-02-20",
-  },
-];
-
-// Account Switcher Component
+// Update AccountSwitcher to accept accounts as a prop
 function AccountSwitcher({
+  accounts,
   selectedAccount,
   onAccountChange,
 }: {
+  accounts: TradingAccount[];
   selectedAccount: string;
   onAccountChange: (accountId: string) => void;
 }) {
@@ -387,15 +358,52 @@ function ChartComponent({ data, type, height = 300, title = "" }: ChartProps) {
 export default function DashboardPage() {
   const { theme } = useTheme();
   const colorMode = theme === "dark" ? colors.dark : colors.light;
-  const [selectedAccountId, setSelectedAccountId] = useState(accounts[0].id);
+  const {
+    accounts,
+    loading,
+    error,
+    fetchAccountTrades,
+  } = useAccounts();
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [recentTrades, setRecentTrades] = useState<any[]>([]);
+
+  // Set default selected account when accounts load
+  useEffect(() => {
+    if (accounts.length && !selectedAccountId) {
+      setSelectedAccountId(accounts[0].id);
+    }
+  }, [accounts, selectedAccountId]);
+
+  // Fetch trades when selected account changes
+  useEffect(() => {
+    if (!selectedAccountId) return;
+    fetchAccountTrades(selectedAccountId, 10).then((trades) => {
+      setRecentTrades(
+        trades.map((t: any) => ({
+          id: t.id,
+          symbol: t.symbol,
+          entryPrice: t.entryPrice,
+          exitPrice: t.exitPrice,
+          profitLoss: t.profitLoss,
+          status: t.status,
+          entryDate: t.entryDate,
+          exitDate: t.exitDate,
+        }))
+      );
+    });
+  }, [selectedAccountId, fetchAccountTrades]);
+
+  if (loading) return <div className="p-6">Loading accounts...</div>;
+  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+  if (!accounts.length) return <div className="p-6">No accounts found.</div>;
 
   const selectedAccount =
     accounts.find((acc) => acc.id === selectedAccountId) || accounts[0];
 
-  // Filter data based on selected account
-  const accountPerformanceData = performanceData; // TODO: Replace with account-specific data
-  const accountTradingActivity = tradingActivityData; // TODO: Replace with account-specific data
-  const accountRecentTrades = recentTrades; // TODO: Replace with account-specific data
+  // Placeholder for charts (since no performance history)
+  const chartPlaceholder = [
+    { x: selectedAccount.lastUpdated, y: Number(selectedAccount.balance) },
+  ];
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -407,7 +415,8 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">Welcome back, Trader</p>
           </div>
           <AccountSwitcher
-            selectedAccount={selectedAccountId}
+            accounts={accounts}
+            selectedAccount={selectedAccountId!}
             onAccountChange={setSelectedAccountId}
           />
         </div>
@@ -431,67 +440,8 @@ export default function DashboardPage() {
           </Card>
         )}
       </div>
-
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Daily P&L
-            </CardTitle>
-            <ActivityIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className="text-2xl font-bold"
-              style={{ color: colorMode.success }}
-            >
-              +$3,245
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +5.2% from yesterday
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Win Rate
-            </CardTitle>
-            <ActivityIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className="text-2xl font-bold"
-              style={{ color: colorMode.primary }}
-            >
-              68.5%
-            </div>
-            <p className="text-xs text-muted-foreground">Last 50 trades</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Open Positions
-            </CardTitle>
-            <ActivityIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className="text-2xl font-bold"
-              style={{ color: colorMode.info }}
-            >
-              3
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total exposure: $15,000
-            </p>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -504,16 +454,15 @@ export default function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: colorMode.primary }}
             >
-              ${selectedAccount.balance.toLocaleString()}
+              ${Number(selectedAccount.balance).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              Available: ${selectedAccount.availableBalance.toLocaleString()}
+              Available: ${Number(selectedAccount.availableBalance).toLocaleString()}
             </p>
           </CardContent>
         </Card>
       </div>
-
-      {/* Charts Section */}
+      {/* Charts Section (placeholder) */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -522,30 +471,24 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[300px]">
               <ChartComponent
-                data={accountPerformanceData}
+                data={chartPlaceholder}
                 type="area"
                 title="Account Balance"
               />
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Trading Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ChartComponent
-                data={accountTradingActivity}
-                type="bar"
-                title="Number of Trades"
-              />
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              No activity data available
             </div>
           </CardContent>
         </Card>
       </div>
-
       {/* Market Overview & Recent Trades */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -592,7 +535,6 @@ export default function DashboardPage() {
             </ScrollArea>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Recent Trades</CardTitle>
@@ -602,37 +544,29 @@ export default function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Pair</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Entry</TableHead>
-                    <TableHead>Exit</TableHead>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead>Entry Price</TableHead>
+                    <TableHead>Exit Price</TableHead>
                     <TableHead>P&L</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {accountRecentTrades.map((trade) => (
+                  {recentTrades.map((trade) => (
                     <TableRow key={trade.id}>
                       <TableCell className="font-medium">
-                        {trade.pair}
+                        {trade.symbol}
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            trade.type === "BUY" ? "default" : "secondary"
-                          }
-                        >
-                          {trade.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{trade.entry}</TableCell>
-                      <TableCell>{trade.exit}</TableCell>
+                      <TableCell>{trade.entryPrice}</TableCell>
+                      <TableCell>{trade.exitPrice ?? '-'}</TableCell>
                       <TableCell
                         className={
-                          trade.pnl >= 0 ? "text-green-600" : "text-red-600"
+                          trade.profitLoss >= 0 ? "text-green-600" : "text-red-600"
                         }
                       >
-                        ${trade.pnl}
+                        ${trade.profitLoss ?? '-'}
                       </TableCell>
+                      <TableCell>{trade.status}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
