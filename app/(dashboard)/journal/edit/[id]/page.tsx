@@ -132,7 +132,7 @@ export default function EditJournalEntryPage({
         Edit Journal Entry
       </h1>
       <JournalEntryForm
-        entry={entry}
+        defaultValues={entry}
         onSubmit={handleUpdateJournal}
         onCancel={handleCancel}
       />

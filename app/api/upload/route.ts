@@ -56,10 +56,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-// Required for handling form data with large files
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

@@ -69,8 +69,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useAccounts, TradingAccount } from "../../app/hooks/useAccounts";
 import { ALL_TRADING_PAIRS } from "@/lib/constants";
 import { useAuth } from "@/contexts/auth-context";
-import * as SelectPrimitive from "@radix-ui/react-select";
 import { useToast } from "@/components/ui/use-toast";
+import { SelectItemIndicator } from "@/components/ui/select";
 
 interface JournalEntryFormProps {
   onSubmit: (data: any) => void;
@@ -652,9 +652,6 @@ export default function JournalEntryForm({
                   </FormControl>
                   <SelectContent
                     className="shadow-xl border rounded-lg max-h-72 overflow-y-auto w-[var(--radix-select-trigger-width)] mt-1 bg-white"
-                    position="popper"
-                    side="bottom"
-                    align="start"
                     style={{ minWidth: 0 }}
                   >
                     <div className="max-h-72 overflow-y-auto">
@@ -685,11 +682,11 @@ export default function JournalEntryForm({
                             <BarChart2 className="w-4 h-4 text-muted-foreground" />
                             <span className="flex-1 text-left">{pair}</span>
                             {/* Checkmark absolutely right-aligned */}
-                            <SelectPrimitive.ItemIndicator>
+                            <SelectItemIndicator>
                               <span className="absolute right-3 top-1/2 -translate-y-1/2">
                                 <Check className="h-4 w-4 text-primary" />
                               </span>
-                            </SelectPrimitive.ItemIndicator>
+                            </SelectItemIndicator>
                             {/* Trash icon for custom pairs, only on hover */}
                             {isCustom && (
                               <button
