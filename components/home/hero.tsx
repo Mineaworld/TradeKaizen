@@ -90,15 +90,14 @@ export default function Hero() {
                 transition={{ duration: 0.5 }}
               >
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-foreground">
-                  Master Your <br />
+                  Stop Guessing. <br />
                   <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-                    Trading Journey
+                    Start Scaling.
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
-                  TradeKaizen is your all-in-one trading journal platform.{" "}
-                  <br /> Turn your trades into a repeatable edge. Ditch the
-                  randomness, build your trading legacy
+                  Turn your trading into a systematic business. Ditch the emotional
+                  rollercoaster and build a data-driven edge that lasts.
                 </p>
               </motion.div>
               <motion.div
@@ -112,7 +111,7 @@ export default function Hero() {
                   size="lg"
                   className="w-full sm:w-auto text-base font-medium bg-primary hover:bg-primary/90"
                 >
-                  <Link href="/register">Start Journaling Free</Link>
+                  <Link href="/register">Build Your Edge - Free</Link>
                 </Button>
                 <Button
                   asChild
@@ -120,7 +119,7 @@ export default function Hero() {
                   size="lg"
                   className="w-full sm:w-auto text-base font-medium border-primary/20 hover:bg-primary/10"
                 >
-                  <Link href="#features">Explore Demo First</Link>
+                  <Link href="#features">See How It Works</Link>
                 </Button>
               </motion.div>
             </div>
@@ -129,8 +128,20 @@ export default function Hero() {
             <motion.div
               className="relative lg:ml-4"
               initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: [0, -10, 0], // Floating effect
+              }}
+              transition={{
+                duration: 0.5,
+                delay: 0.3,
+                y: {
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                },
+              }}
             >
               <div className="relative w-full min-h-[480px] sm:aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 dark:from-background/90 dark:to-background/70 rounded-xl border shadow-2xl">
                 {/* Glass effect overlay */}

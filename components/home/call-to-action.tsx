@@ -7,23 +7,22 @@ export default function CallToAction() {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold mb-4">
-            Ready to Transform Your Trading Journey?
+            Your Edge Awaits.
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of traders who are using data-driven insights to
-            improve their performance and consistency.
+            The market doesn't care about your feelings. It respects your discipline.
+            Start building your legacy today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">
-              <Link href="/register">Get Started For Free</Link>
+              <Link href="/register">Start For Free</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="#features">A Demo</Link>
+              <Link href="#features">See How It Works</Link>
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            Join hundreds of traders before this week ends — get 7-days free, no
-            card needed.
+            No credit card required for free tier. Upgrade only when you profit.
           </p>
         </div>
       </div>
